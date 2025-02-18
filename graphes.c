@@ -3,10 +3,14 @@
 // LISTES D'ADJACENCES
 
 LiAdj* listeInit(int nb_vrtx) {
+    assert(nb_vrtx > 0);
     LiAdj* liste = (LiAdj*)malloc(sizeof(LiAdj));
+    assert(liste);
+
     liste->nb_vrtx = nb_vrtx;
     liste->nb_edges = 0;
     liste->L = (VrtxVoisin**)malloc(nb_vrtx * sizeof(VrtxVoisin));
+    assert(liste->L);
 
     for (int i=0;i<nb_vrtx;i++) {
         liste->L[i] = NULL;
@@ -15,6 +19,8 @@ LiAdj* listeInit(int nb_vrtx) {
 }
 
 void listeFree(LiAdj* li) {
+    if (li == NULL) return;
+
     for (int i=0;i < li->nb_vrtx;i++) {
         vrtxVoisinsFree(li->L[i]);
     }
@@ -23,6 +29,8 @@ void listeFree(LiAdj* li) {
 }
 
 int listeSingleAdd(LiAdj* li, int vrtx, int vzn_id) {
+    assert(li != NULL && vrtx > 0 && vzn_id > 0 && vrtx < li->nb_vrtx && vzn_id < li->nb_vrtx);
+
     if (li->L[vrtx] == NULL) {
         li->L[vrtx] = vrtxVoisinInit(vzn_id);
         li->nb_edges += 1;
@@ -49,9 +57,10 @@ void listeAdd(LiAdj* li, int va, int vb) {
 }
 
 LiAdj* tabEdges2Liste(int nb_vrtx, int* tab, int tab_size) {
+    assert(tab != NULL && nb_vrtx > 0);
+
     LiAdj* li = listeInit(nb_vrtx);
     for (int i=0; i<tab_size/2; i++) {
-        printf("adding : %d et %d\n", tab[2*i], tab[2*i+1]);
         listeAdd(li, tab[2*i], tab[2*i+1]);
     }
 
@@ -59,6 +68,8 @@ LiAdj* tabEdges2Liste(int nb_vrtx, int* tab, int tab_size) {
 }
 
 void listePrint(LiAdj* li) {
+    if (li == NULL) return;
+
     printf("liste d'ajdacence : \n");
     for (int i=0; i<li->nb_vrtx; i++) {
         printf("%d :\t", i +1);
@@ -70,10 +81,14 @@ void listePrint(LiAdj* li) {
 // VOISINS : LISTE CHAINÉE
 
 VrtxVoisin* vrtxVoisinInit(int id) {
-    VrtxVoisin* new = (VrtxVoisin*)malloc(sizeof(VrtxVoisin));
-    new->id = id;
-    new->next = NULL;
-    return new;
+    assert(id > 0);
+
+    VrtxVoisin* new_vrtx = (VrtxVoisin*)malloc(sizeof(VrtxVoisin));
+    assert(new_vrtx);
+
+    new_vrtx->id = id;
+    new_vrtx->next = NULL;
+    return new_vrtx;
 }
 
 void vrtxVoisinsFree(VrtxVoisin* vrtx) {
@@ -86,6 +101,8 @@ void vrtxVoisinsFree(VrtxVoisin* vrtx) {
 }
 
 int vrtxDeg(VrtxVoisin* vrtx) {
+    assert(vrtx);
+
     int i = 0;
     while (vrtx != NULL) {
         vrtx = vrtx->next;
@@ -95,6 +112,8 @@ int vrtxDeg(VrtxVoisin* vrtx) {
 }
 
 void vrtxVoisinsPrint(VrtxVoisin* vrtx) {
+    if (vrtx == NULL) return;
+
     while (vrtx != NULL) {
         printf("%d ", vrtx->id +1);
         vrtx = vrtx->next;
@@ -106,6 +125,7 @@ void vrtxVoisinsPrint(VrtxVoisin* vrtx) {
 
 Graphe* grInit() {
     Graphe *Gr = (Graphe*)malloc(sizeof(Graphe));
+    assert(Gr);
 
     Gr->liste = NULL;
     Gr->mat = NULL;
@@ -113,8 +133,9 @@ Graphe* grInit() {
 }
 
 void grFree(Graphe* Gr) {
+    if (Gr == NULL) return;
+
     if (Gr->liste != NULL) listeFree(Gr->liste);
-    // if (Gr->mat != NULL) matFree(Gr->mat)   MATRICE D'ADJACENCE PAS ENCORE IMPLÉMENTÉE;
     free(Gr);
 }
 
@@ -131,26 +152,30 @@ Graphe* grLoad(char* fname, int loadMat, int loadListe) {
 
 void grDegDistrib(Graphe* Gr) {
     char *nom_plot = "test.txt";
-    fclose(fopen(nom_plot, "w"));
-    FILE *plot = fopen(nom_plot, "a");
+    FILE *plot = fopen(nom_plot, "w");
+
+    assert(Gr);
+    assert(plot);
+    fclose(plot);
+    plot = fopen(nom_plot, "a");
 
     if (Gr->liste != NULL) {
         int *degs = (int*)malloc(Gr->liste->nb_vrtx * sizeof(int));
-        int sizeOcc = 0;
+        assert(degs);
+        int size_occ = 0;
         for (int i=0; i < Gr->liste->nb_vrtx; i++) {
             degs[i] = vrtxDeg(Gr->liste->L[i]);
         }
 
-        int *occ = tabCountsOcc(degs, Gr->liste->nb_vrtx, &sizeOcc);
+        int *occ = tabCountsOcc(degs, Gr->liste->nb_vrtx, &size_occ);
         free(degs);
-        printtab(occ, sizeOcc);
 
-        for (int i=0; i<sizeOcc; i++) {
-            if (occ[i] == 0 && i!=0 && i!=sizeOcc-1) continue;
+        for (int i=0; i<size_occ; i++) {
+            if (occ[i] == 0 && i!=0 && i!=size_occ-1) continue;
             fprintf(plot, "%d %d\n", i, occ[i]);
         }
         free(occ);
-    } //else    MATRICE D'ADJACENCE PAS ENCORE IMPLÉMENTÉE
+    }
     fclose(plot);
 }
 
@@ -173,6 +198,7 @@ Graphe* erdosRenyi(int n, int m) {
 }
 
 void grPrintStats(Graphe* Gr) {
+    if (Gr == NULL) return;
     if (Gr->liste != NULL) {
         printf("GRAPHE :\n");
         printf("\tn = %d\n", Gr->liste->nb_vrtx);
@@ -183,16 +209,18 @@ void grPrintStats(Graphe* Gr) {
 // OUTILS
 
 void readFile(char* fname, void (*actionOnLine)(int va, int vb, void* ret), void* ret) {
-    FILE* f = fopen(fname, "r");
+    FILE* fic = fopen(fname, "r");
+    assert(fic);
+
     char header[256];  // pas de données sur la première ligne
-    fgets(header, 256, f);
+    fgets(header, 256, fic);
 
     int va = -1, vb = -1;
-    fscanf(f, "%d\t%d ", &va, &vb);
+    fscanf(fic, "%d\t%d ", &va, &vb);
     while(va != -1) {
         actionOnLine(va-1, vb-1, ret);
         va = -1; vb = -1;
-        fscanf(f, "%d\t%d ", &va, &vb);
+        fscanf(fic, "%d\t%d ", &va, &vb);
     }
 }
 
@@ -218,6 +246,7 @@ void _edges_liste(int va, int vb, void* li) {
 }
 
 int bernou(double prob) {
+    assert(prob <= 1 && prob >= 0);
     double randFl = rand();
     randFl /= RAND_MAX;
     if (randFl <= prob) return 1;
@@ -225,6 +254,8 @@ int bernou(double prob) {
 }
 
 int* tabCountsOcc(int* degs, int size_degs, int* size_occ) {
+    assert(degs);
+
     int min = degs[0], max = degs[0], i;
     for (i=1; i<size_degs; i++) {
         if (degs[i] < min) min = degs[i];
@@ -232,6 +263,7 @@ int* tabCountsOcc(int* degs, int size_degs, int* size_occ) {
     }
 
     int *occ = (int*)malloc((max+1) * sizeof(int));
+    assert(occ);
     for (i=0; i<max+1; i++) {
         occ[i] = 0;
     }
@@ -246,6 +278,9 @@ int* tabCountsOcc(int* degs, int size_degs, int* size_occ) {
 void shuffle(int* tab, int size) {
     srand(time(NULL));
     int* shuffled = (int*)malloc(size * sizeof(int));
+    assert(shuffle);
+    assert(tab);
+
     for (int i=0;i<size;i++) shuffled[i] = -1;
     int k = rand() % size;
     for (int i=0;i<size;i++) {
@@ -257,11 +292,14 @@ void shuffle(int* tab, int size) {
 }
 
 int* tabEdgesConfig(int* occ, int size_occ, int* edges_size) {
+    assert(occ && size_occ != 0);
+
     int nb_edges = 0;
     for (int i=0; i<size_occ; i++) {
         nb_edges += occ[i] * i;
     }
     int* edges = (int*)malloc(nb_edges * sizeof(int));
+    assert(edges);
 
     int vrtx_id = 0, edge_id = 0;
     for (int i=0; i<size_occ; i++) {
@@ -279,12 +317,16 @@ int* tabEdgesConfig(int* occ, int size_occ, int* edges_size) {
 }
 
 void swap(int* tab, int i, int k) {
+    assert(tab);
+
     int tmp = tab[i];
     tab[i] = tab[k];
     tab[k] = tmp;
 }
 
 void printtab(int* tab, int tab_size) {
+    if (tab == NULL) return;
+
     printf("[");
     for (int i=0; i<tab_size-1; i++) {
         printf("%d, ", tab[i]);
@@ -293,7 +335,9 @@ void printtab(int* tab, int tab_size) {
 }
 
 int _edgeListeDoublon(int a, int b, int* tab, int tab_start, int tab_size) {
+    assert(tab != NULL && tab_size > 0 && tab_start <= tab_size);
     if (tab_size == 0) return 0;
+
     tab += tab_start;
     for (int i=0; i<tab_size/2; i++) {
         if (tab[2*i] == a && tab[2*i+1] == b) {
@@ -307,6 +351,8 @@ int _edgeListeDoublon(int a, int b, int* tab, int tab_start, int tab_size) {
 }
 
 int* sortEdgetab(int* tab, int tab_size) {
+    assert(tab != NULL && tab_size > 0 && tab_size%2 == 0);
+
     int j;
     for (int i=0; i<tab_size/2; i++) {
         j = 1;

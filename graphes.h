@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
+#include <assert.h>
 
 typedef struct _matrice_adjacence MatAdj;
 struct _matrice_adjacence {
