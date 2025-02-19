@@ -3,7 +3,7 @@ Génération de graphes aléatoires à l’aide de méthodes Monte-Carlo par cha
 
 ### TODO : 
 
- - [X] tests params, mallocs
+ - [X] tests params, mallocs, uint32_t
  - [ ] nettoyer
  - [ ] améliorer sortEdgetab
  - [ ] ajouter une 2e fonction de gen. d'ErdosR
