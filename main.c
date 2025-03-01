@@ -12,25 +12,23 @@ int main(void)
     sortEdgetab(edges, edges_size);
     printtab(edges, edges_size);
     LiAdj* li = tabEdges2Liste(6,edges, edges_size);
-    Graphe* test2 = grInit();
-    test2->liste = li;
-    grPrintStats(test2);
-    listePrint(test2->liste);
-    grDegDistrib(test2);
-    grFree(test2);
+    listePrintStats(li);
+    listePrint(li);
+    listeDegDistrib(li);
+    listeFree(li);
 
     // LECTURE GRAPHE
-    Graphe* test = grLoad("/Users/floux/Documents/cours/L2/projet_13/data/hiv/out.hiv");
-    listePrint(test->liste);
-    printf("%d %d\n\n", test->liste->nb_vrtx, test->liste->nb_edges/2);
-    grFree(test);
+    LiAdj* li2 = listeLoad("/Users/floux/Documents/cours/L2/projet_13/data/hiv/out.hiv");
+    listePrint(li2);
+    printf("%d %d\n\n", li2->nb_vrtx, li2->nb_edges/2);
+    listeFree(li2);
 
     // ERDOS RENYI
-    Graphe* erdr = erdosRenyi(26039, 214817);
-    grPrintStats(erdr);
+    LiAdj* erdr = erdosRenyi(26039, 214817);
+    listePrintStats(erdr);
     printf("\n");
-    grDegDistrib(erdr);
-    grFree(erdr);
+    listeDegDistrib(erdr);
+    listeFree(erdr);
 
     return 0;
 }

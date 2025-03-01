@@ -58,6 +58,12 @@ void listeAdd(LiAdj* li, uint32_t va, uint32_t vb) {
     listeSingleAdd(li, vb, va);
 }
 
+LiAdj* listeLoad(char* fname) {
+    LiAdj* li = listeInit( countVrtx(fname) );
+    readFile(fname, &_edges_liste, li);
+    return li;
+}
+
 LiAdj* tabEdges2Liste(uint32_t nb_vrtx, uint32_t* tab, uint32_t tab_size) {
     assert(tab != NULL && nb_vrtx > 0);
 
@@ -67,6 +73,55 @@ LiAdj* tabEdges2Liste(uint32_t nb_vrtx, uint32_t* tab, uint32_t tab_size) {
     }
 
     return li;
+}
+
+LiAdj* erdosRenyi(uint32_t n, uint32_t m) {
+    LiAdj* li = listeInit(n);
+
+    srand(time(NULL));
+    double prob = 2*m;
+    prob /= n*(n+1); //     m ÷ (2 parmi n)
+    printf("prob : %f\n", prob);
+
+    for (uint32_t va=0; va<n; va++) {
+        for (uint32_t vb=va +1; vb<n; vb++) {  // on liste toutes les paires de vrtx possibles, sans doublons, sans boucles : n(n-1)/2
+            if (bernou(prob) == 1) listeAdd(li, va, vb);
+        }
+    }
+    return li;
+}
+
+void listeDegDistrib(LiAdj* li) {
+    char *nom_plot = "test.txt";
+    FILE *plot = fopen(nom_plot, "w");
+
+    assert(li);
+    assert(plot);
+    fclose(plot);
+    plot = fopen(nom_plot, "a");
+
+    uint32_t *degs = (uint32_t*)malloc(li->nb_vrtx * sizeof(uint32_t));
+    assert(degs);
+    uint32_t size_occ = 0;
+    for (uint32_t i=0; i < li->nb_vrtx; i++) {
+        degs[i] = vrtxDeg(li->L[i]);
+    }
+    uint32_t *occ = tabCountsOcc(degs, li->nb_vrtx, &size_occ);
+    free(degs);
+    for (uint32_t i=0; i<size_occ; i++) {
+        if (occ[i] == 0 && i!=0 && i!=size_occ-1) continue;
+        fprintf(plot, "%d %d\n", i, occ[i]);
+    }
+    free(occ);
+
+    fclose(plot);
+}
+
+void listePrintStats(LiAdj* li) {
+    if (li == NULL) return;
+    printf("GRAPHE :\n");
+    printf("\tn = %" PRIu32 "\n", li->nb_vrtx);
+    printf("\tm = %" PRIu32 "\n", li->nb_edges/2);
 }
 
 void listePrint(LiAdj* li) {
@@ -123,82 +178,6 @@ void vrtxVoisinsPrint(VrtxVoisin* vrtx) {
     printf("\n");
 }
 
-// GRAPHES
-
-Graphe* grInit() {
-    Graphe *Gr = (Graphe*)malloc(sizeof(Graphe));
-    assert(Gr);
-
-    Gr->liste = NULL;
-    return Gr;
-}
-
-void grFree(Graphe* Gr) {
-    if (Gr == NULL) return;
-    listeFree(Gr->liste);
-    free(Gr);
-}
-
-Graphe* grLoad(char* fname) {
-    Graphe *Gr = grInit();
-    LiAdj* li = listeInit( countVrtx(fname) );
-    readFile(fname, &_edges_liste, li);
-    Gr->liste = li;
-    return Gr;
-}
-
-void grDegDistrib(Graphe* Gr) {
-    char *nom_plot = "test.txt";
-    FILE *plot = fopen(nom_plot, "w");
-
-    assert(Gr);
-    assert(plot);
-    fclose(plot);
-    plot = fopen(nom_plot, "a");
-
-    uint32_t *degs = (uint32_t*)malloc(Gr->liste->nb_vrtx * sizeof(uint32_t));
-    assert(degs);
-    uint32_t size_occ = 0;
-    for (uint32_t i=0; i < Gr->liste->nb_vrtx; i++) {
-        degs[i] = vrtxDeg(Gr->liste->L[i]);
-    }
-    uint32_t *occ = tabCountsOcc(degs, Gr->liste->nb_vrtx, &size_occ);
-    free(degs);
-    for (uint32_t i=0; i<size_occ; i++) {
-        if (occ[i] == 0 && i!=0 && i!=size_occ-1) continue;
-        fprintf(plot, "%d %d\n", i, occ[i]);
-    }
-    free(occ);
-
-    fclose(plot);
-}
-
-Graphe* erdosRenyi(uint32_t n, uint32_t m) {
-    Graphe* Gr = grInit();
-    LiAdj* li = listeInit(n);
-    Gr->liste = li;
-
-    srand(time(NULL));
-    double prob = 2*m;
-    prob /= n*(n+1); //     m ÷ (2 parmi n)
-    printf("prob : %f\n", prob);
-
-    for (uint32_t va=0; va<n; va++) {
-        for (uint32_t vb=va +1; vb<n; vb++) {  // on liste toutes les paires de vrtx possibles, sans doublons, sans boucles : n(n-1)/2
-            if (bernou(prob) == 1) listeAdd(li, va, vb);
-        }
-    }
-    return Gr;
-}
-
-void grPrintStats(Graphe* Gr) {
-    if (Gr == NULL) return;
-    printf("GRAPHE :\n");
-    printf("\tn = %" PRIu32 "\n", Gr->liste->nb_vrtx);
-    printf("\tm = %" PRIu32 "\n", Gr->liste->nb_edges/2);
-}
-
-// OUTILS
 
 void readFile(char* fname, void (*actionOnLine)(uint32_t va, uint32_t vb, void* ret), void* ret) {
     FILE* fic = fopen(fname, "r");
@@ -237,13 +216,59 @@ void _edges_liste(uint32_t va, uint32_t vb, void* li) {
     listeAdd(li, va, vb);
 }
 
-int bernou(double prob) {
-    assert(prob <= 1 && prob >= 0);
-    double randFl = rand();
-    randFl /= RAND_MAX;
-    if (randFl <= prob) return 1;
-    else return 0;
+
+void swapTab(uint32_t* tab, uint32_t i, uint32_t k) {
+    assert(tab);
+
+    uint32_t tmp = tab[i];
+    tab[i] = tab[k];
+    tab[k] = tmp;
 }
+
+void shuffle(uint32_t* tab, uint32_t size) {
+    srand(time(NULL));
+    uint32_t* shuffled = (uint32_t*)malloc(size * sizeof(uint32_t));
+    assert(shuffle);
+    assert(tab);
+    uint32_t i, k;
+
+    for (i=0;i<size;i++) shuffled[i] = UINT32_MAX;
+    k = rand() % size;
+    for (i=0;i<size;i++) {
+        while (shuffled[k] != UINT32_MAX) k = rand() % size;
+        shuffled[k] = tab[i];
+    }
+    for (i=0;i<size;i++) tab[i] = shuffled[i];
+    free(shuffled);
+}
+
+uint32_t* sortEdgetab(uint32_t* tab, uint32_t tab_size) {
+    assert(tab != NULL && tab_size > 0);
+
+    uint32_t i, j;
+    for (i=0; i<tab_size/2; i++) {
+        j = 1;
+        while ((tab[0] == tab[j] ||
+                _edgeListeDoublon(tab[0], tab[j], tab, tab_size-2*i, 2*i))
+               && j < tab_size-2*i) j++;
+        swapTab(tab, 0, tab_size -2*(i+1));
+        swapTab(tab, j, tab_size -2*i- 1);
+        swapTab(tab, 1, j);
+    }
+
+    return tab;
+}
+
+void printtab(uint32_t* tab, uint32_t tab_size) {
+    if (tab == NULL) return;
+
+    printf("[");
+    for (uint32_t i=0; i<tab_size-1; i++) {
+        printf("%d, ", tab[i]);
+    }
+    printf("%d]\n", tab[tab_size-1]);
+}
+
 
 uint32_t* tabCountsOcc(uint32_t* degs, uint32_t size_degs, uint32_t* size_occ) {
     assert(degs);
@@ -265,23 +290,6 @@ uint32_t* tabCountsOcc(uint32_t* degs, uint32_t size_degs, uint32_t* size_occ) {
 
     *size_occ = max+1;
     return occ;
-}
-
-void shuffle(uint32_t* tab, uint32_t size) {
-    srand(time(NULL));
-    uint32_t* shuffled = (uint32_t*)malloc(size * sizeof(uint32_t));
-    assert(shuffle);
-    assert(tab);
-    uint32_t i, k;
-
-    for (i=0;i<size;i++) shuffled[i] = UINT32_MAX;
-    k = rand() % size;
-    for (i=0;i<size;i++) {
-        while (shuffled[k] != UINT32_MAX) k = rand() % size;
-        shuffled[k] = tab[i];
-    }
-    for (i=0;i<size;i++) tab[i] = shuffled[i];
-    free(shuffled);
 }
 
 uint32_t* tabEdgesConfig(uint32_t* occ, uint32_t size_occ, uint32_t* edges_size) {
@@ -310,24 +318,6 @@ uint32_t* tabEdgesConfig(uint32_t* occ, uint32_t size_occ, uint32_t* edges_size)
     return edges;
 }
 
-void swap(uint32_t* tab, uint32_t i, uint32_t k) {
-    assert(tab);
-
-    uint32_t tmp = tab[i];
-    tab[i] = tab[k];
-    tab[k] = tmp;
-}
-
-void printtab(uint32_t* tab, uint32_t tab_size) {
-    if (tab == NULL) return;
-
-    printf("[");
-    for (uint32_t i=0; i<tab_size-1; i++) {
-        printf("%d, ", tab[i]);
-    }
-    printf("%d]\n", tab[tab_size-1]);
-}
-
 int _edgeListeDoublon(uint32_t a, uint32_t b, uint32_t* tab, uint32_t tab_start, uint32_t tab_size) {
     assert(tab != NULL && tab_size >= 0);
 
@@ -345,19 +335,11 @@ int _edgeListeDoublon(uint32_t a, uint32_t b, uint32_t* tab, uint32_t tab_start,
     return 0;
 }
 
-uint32_t* sortEdgetab(uint32_t* tab, uint32_t tab_size) {
-    assert(tab != NULL && tab_size > 0);
 
-    uint32_t i, j;
-    for (i=0; i<tab_size/2; i++) {
-        j = 1;
-        while ((tab[0] == tab[j] ||
-                _edgeListeDoublon(tab[0], tab[j], tab, tab_size-2*i, 2*i))
-               && j < tab_size-2*i) j++;
-        swap(tab, 0, tab_size -2*(i+1));
-        swap(tab, j, tab_size -2*i- 1);
-        swap(tab, 1, j);
-    }
-
-    return tab;
+int bernou(double prob) {
+    assert(prob <= 1 && prob >= 0);
+    double randFl = rand();
+    randFl /= RAND_MAX;
+    if (randFl <= prob) return 1;
+    else return 0;
 }
