@@ -24,7 +24,9 @@ struct _liste_adjacence {
  *       * listeFree(li) : Libère la mémoire occupée par la liste d'adjacence.
  *   - Manipulation des arêtes :
  *       * listeAdd(li, va, vb) : Ajoute une arête entre les sommets va et vb.
- *       * listeSingleAdd(li, vrtx, vzn_id) : Ajoute un voisin unique à un sommet.
+ *       * listeAddSingle(li, vrtx, vzn_id) : Ajoute un voisin unique à un sommet.
+ *       * listeRemove(li, va, vb) : efface l'arête entre les sommets va et vb.
+ *       * listeRemoveSingle(li, vrtx, vzn_id) : enlève un voisin unique d'un sommet.
  *   - Chargement et génération :
  *       * listeLoad(fname) : Charge un graphe à partir d'un fichier.
  *       * tabEdges2Liste(nb_vrtx, tab, tab_size) : Convertit un tableau d'arêtes en liste d'adjacence.
@@ -37,8 +39,10 @@ struct _liste_adjacence {
 
 LiAdj* listeInit(uint32_t nb_vrtx);
 void listeFree(LiAdj* li);
-int listeSingleAdd(LiAdj* li, uint32_t vrtx, uint32_t vzn_id);
+int  listeAddSingle(LiAdj* li, uint32_t vrtx, uint32_t vzn_id);
 void listeAdd(LiAdj* li, uint32_t va, uint32_t vb);
+void listeRemoveSingle(LiAdj* li, uint32_t va, uint32_t vb);
+void listeRemove(LiAdj* li, uint32_t va, uint32_t vb);
 LiAdj* listeLoad(char* fname);
 LiAdj* tabEdges2Liste(uint32_t nb_vrtx, uint32_t* tab, uint32_t tab_size);
 LiAdj* erdosRenyi(uint32_t n, uint32_t m);
@@ -67,6 +71,7 @@ void listePrint(LiAdj* li);
  *       * tabCountsOcc(degs, size_degs, size_occ) : Calcule l'occurrence des degrés.
  *       * tabEdgesConfig(occ, size_occ, edges_size) : Génère un tableau de semi-arêtes à partir d'une distribution de degrés.
  *       * _edgeListeDoublon(a, b, tab, tab_start, tab_size) : Vérifie si une arête est déjà présente dans un tableau de semi-arêtes.
+ *       * swap(li, a, b, c, d) : échange deux arrêtes (a, b) et (c, d) deviennent (a, c) et (b, d).
  */
 
 VrtxVoisin* vrtxVoisinInit(uint32_t id);
@@ -88,5 +93,6 @@ void printtab(uint32_t* tab, uint32_t tab_size);
 uint32_t* tabCountsOcc(uint32_t* degs, uint32_t size_degs, uint32_t* size_occ);
 uint32_t* tabEdgesConfig(uint32_t* occ, uint32_t size_occ, uint32_t* edges_size);
 int _edgeListeDoublon(uint32_t a, uint32_t b, uint32_t* tab, uint32_t tab_start, uint32_t tab_size);
+void swap(LiAdj* li, uint32_t a, uint32_t b, uint32_t c, uint32_t d);
 
 int bernou(double prob);

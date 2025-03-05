@@ -7,6 +7,12 @@ Génération de graphes aléatoires à l’aide de méthodes Monte-Carlo par cha
  - [X] nettoyer
  - [ ] améliorer sortEdgetab
  - [ ] ajouter une 2e fonction de gen. d'ErdosR
- - [ ] ajouter une fonction de swap d'arrètes
+ - [X] ajouter une fonction de swap d'arrètes
  - [ ] ajouter voisins dans l'ordre croissant (listeSingleAdd)
+
+#### Important :
+ - [ ] plot le nb d'étapes pour générer un graphe à partir d'un config model
+ - [ ] compter les triangles
+ - [ ] actualiser le nb de triangles
+ - [ ] plot l'évolution
  - [ ] nettoyer encore plus

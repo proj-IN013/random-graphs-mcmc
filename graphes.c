@@ -28,7 +28,7 @@ void listeFree(LiAdj* li) {
     free(li);
 }
 
-int listeSingleAdd(LiAdj* li, uint32_t vrtx, uint32_t vzn_id) {
+int listeAddSingle(LiAdj* li, uint32_t vrtx, uint32_t vzn_id) {
     assert(li != NULL);
     assert(vrtx >= 0 && vzn_id >= 0);
     assert(vrtx < li->nb_vrtx);
@@ -54,8 +54,33 @@ int listeSingleAdd(LiAdj* li, uint32_t vrtx, uint32_t vzn_id) {
 }
 
 void listeAdd(LiAdj* li, uint32_t va, uint32_t vb) {
-    listeSingleAdd(li, va, vb);
-    listeSingleAdd(li, vb, va);
+    listeAddSingle(li, va, vb);
+    listeAddSingle(li, vb, va);
+}
+
+void listeRemoveSingle(LiAdj* li, uint32_t va, uint32_t vb) {
+    VrtxVoisin* tmp = li->L[va];
+    if (tmp->id == vb) {
+        li->L[va] = tmp->next;
+        free(tmp);
+        li->nb_edges--;
+        return;
+    }
+    while (tmp->next) {
+        if (tmp->next->id == vb) {
+            VrtxVoisin* del = tmp->next;
+            tmp->next = tmp->next->next;
+            free(del);
+            li->nb_edges--;
+            return;
+        }
+        tmp = tmp->next;
+    }
+}
+
+void listeRemove(LiAdj* li, uint32_t va, uint32_t vb) {
+    listeRemoveSingle(li, va, vb);
+    listeRemoveSingle(li, vb, va);
 }
 
 LiAdj* listeLoad(char* fname) {
@@ -208,8 +233,8 @@ void _printline(uint32_t va, uint32_t vb, void* test) {
 }
 
 void _unique_vrtx_liste(uint32_t va, uint32_t vb, void* li) {
-    listeSingleAdd((LiAdj*)li, 0, va);
-    listeSingleAdd((LiAdj*)li, 0, vb);
+    listeAddSingle((LiAdj*)li, 0, va);
+    listeAddSingle((LiAdj*)li, 0, vb);
 }
 
 void _edges_liste(uint32_t va, uint32_t vb, void* li) {
@@ -333,6 +358,15 @@ int _edgeListeDoublon(uint32_t a, uint32_t b, uint32_t* tab, uint32_t tab_start,
         }
     }
     return 0;
+}
+
+void swap(LiAdj* li, uint32_t a, uint32_t b, uint32_t c, uint32_t d) {
+    // TESTER SI LES ARRÊTES EXISTENT
+    listeRemove(li, a, b);
+    listeRemove(li, c, d);
+
+    listeAdd(li, a, c);
+    listeAdd(li, b, d);
 }
 
 

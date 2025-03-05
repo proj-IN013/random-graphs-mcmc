@@ -17,12 +17,17 @@ int main(void)
     listeDegDistrib(li);
     listeFree(li);
 
+    //compter le nb de triangles
+    //étudier sa convergence
+
     // LECTURE GRAPHE
     LiAdj* li2 = listeLoad("/Users/floux/Documents/cours/L2/projet_13/data/hiv/out.hiv");
+    swap(li2, 39, 38, 11, 37);
     listePrint(li2);
     printf("%d %d\n\n", li2->nb_vrtx, li2->nb_edges/2);
     listeFree(li2);
 
+    exit(EXIT_SUCCESS);
     // ERDOS RENYI
     LiAdj* erdr = erdosRenyi(26039, 214817);
     listePrintStats(erdr);
