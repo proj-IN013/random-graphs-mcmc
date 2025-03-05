@@ -83,6 +83,16 @@ void listeRemove(LiAdj* li, uint32_t va, uint32_t vb) {
     listeRemoveSingle(li, vb, va);
 }
 
+uint8_t areteExiste(LiAdj* li, uint32_t va, uint32_t vb) {
+    assert(li);
+    assert(va < li->nb_vrtx && vb < li->nb_vrtx);
+    int a = vrtxEstVoisin(li->L[va], vb);
+    int b = vrtxEstVoisin(li->L[vb], va);
+    if (a==1 && b==1) return 1;
+    if (a==1 || b==1) exit(EXIT_FAILURE);
+    return 0;
+}
+
 LiAdj* listeLoad(char* fname) {
     LiAdj* li = listeInit( countVrtx(fname) );
     readFile(fname, &_edges_liste, li);
@@ -191,6 +201,17 @@ uint32_t vrtxDeg(VrtxVoisin* vrtx) {
         i++;
     }
     return i;
+}
+
+uint8_t vrtxEstVoisin(VrtxVoisin* vrtx, uint32_t voiz) {
+    assert(vrtx);
+    if (voiz == vrtx->id) return 0;
+    vrtx = vrtx->next;
+    while (vrtx != NULL) {
+        if (voiz == vrtx->id) return 1;
+        vrtx = vrtx->next;
+    }
+    return 0;
 }
 
 void vrtxVoisinsPrint(VrtxVoisin* vrtx) {
@@ -360,8 +381,17 @@ int _edgeListeDoublon(uint32_t a, uint32_t b, uint32_t* tab, uint32_t tab_start,
     return 0;
 }
 
-void swap(LiAdj* li, uint32_t a, uint32_t b, uint32_t c, uint32_t d) {
-    // TESTER SI LES ARRÊTES EXISTENT
+void swap(LiAdj* li, uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint8_t do_test=2) {
+    if (do_test >= 1) {
+        assert(areteExiste(li, a, c) == 0);
+        assert(areteExiste(li, b, d) == 0);
+        if (do_test == 2) {
+            assert(a != b && a != c && a != d && b != c && b != d && c!= d);
+            assert(areteExiste(li, a, b) == 1);
+            assert(areteExiste(li, c, d) == 1);
+        }
+    }
+
     listeRemove(li, a, b);
     listeRemove(li, c, d);
 

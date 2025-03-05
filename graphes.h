@@ -71,7 +71,7 @@ void listePrint(LiAdj* li);
  *       * tabCountsOcc(degs, size_degs, size_occ) : Calcule l'occurrence des degrés.
  *       * tabEdgesConfig(occ, size_occ, edges_size) : Génère un tableau de semi-arêtes à partir d'une distribution de degrés.
  *       * _edgeListeDoublon(a, b, tab, tab_start, tab_size) : Vérifie si une arête est déjà présente dans un tableau de semi-arêtes.
- *       * swap(li, a, b, c, d) : échange deux arrêtes (a, b) et (c, d) deviennent (a, c) et (b, d).
+ *       * swap(li, a, b, c, d, do_test) : échange deux arrêtes (a, b) et (c, d) qui deviennent (a, c) et (b, d), do_test=1 teste les arêtes d'arrivée, do_test=2 teste aussi les arêtes en entrée.
  */
 
 VrtxVoisin* vrtxVoisinInit(uint32_t id);
@@ -93,6 +93,6 @@ void printtab(uint32_t* tab, uint32_t tab_size);
 uint32_t* tabCountsOcc(uint32_t* degs, uint32_t size_degs, uint32_t* size_occ);
 uint32_t* tabEdgesConfig(uint32_t* occ, uint32_t size_occ, uint32_t* edges_size);
 int _edgeListeDoublon(uint32_t a, uint32_t b, uint32_t* tab, uint32_t tab_start, uint32_t tab_size);
-void swap(LiAdj* li, uint32_t a, uint32_t b, uint32_t c, uint32_t d);
+void swap(LiAdj* li, uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint8_t do_test);
 
 int bernou(double prob);

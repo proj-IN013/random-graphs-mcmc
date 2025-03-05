@@ -22,7 +22,7 @@ int main(void)
 
     // LECTURE GRAPHE
     LiAdj* li2 = listeLoad("/Users/floux/Documents/cours/L2/projet_13/data/hiv/out.hiv");
-    swap(li2, 39, 38, 11, 37);
+    swap(li2, 39, 38, 11, 37, 2);
     listePrint(li2);
     printf("%d %d\n\n", li2->nb_vrtx, li2->nb_edges/2);
     listeFree(li2);
