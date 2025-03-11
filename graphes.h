@@ -27,6 +27,7 @@ struct _liste_adjacence {
  *       * listeAddSingle(li, vrtx, vzn_id) : Ajoute un voisin unique à un sommet.
  *       * listeRemove(li, va, vb) : efface l'arête entre les sommets va et vb.
  *       * listeRemoveSingle(li, vrtx, vzn_id) : enlève un voisin unique d'un sommet.
+ *       * areteExiste(li, va, vb) : renvoie 1 si l'arête existe, 0 sinon.
  *   - Chargement et génération :
  *       * listeLoad(fname) : Charge un graphe à partir d'un fichier.
  *       * tabEdges2Liste(nb_vrtx, tab, tab_size) : Convertit un tableau d'arêtes en liste d'adjacence.
@@ -43,6 +44,7 @@ int  listeAddSingle(LiAdj* li, uint32_t vrtx, uint32_t vzn_id);
 void listeAdd(LiAdj* li, uint32_t va, uint32_t vb);
 void listeRemoveSingle(LiAdj* li, uint32_t va, uint32_t vb);
 void listeRemove(LiAdj* li, uint32_t va, uint32_t vb);
+uint8_t areteExiste(LiAdj* li, uint32_t va, uint32_t vb);
 LiAdj* listeLoad(char* fname);
 LiAdj* tabEdges2Liste(uint32_t nb_vrtx, uint32_t* tab, uint32_t tab_size);
 LiAdj* erdosRenyi(uint32_t n, uint32_t m);
@@ -55,6 +57,7 @@ void listePrint(LiAdj* li);
  *       * vrtxVoisinInit(id) : Initialise un voisin.
  *       * vrtxVoisinsFree(v) : Libère la mémoire des voisins.
  *       * vrtxDeg(vrtx) : Calcule le degré d'un sommet.
+ *       * vrtxEstVoisin(vrtx, voiz) : renvoie 1 si voiz est un voisin de vrtx, 0 sinon
  *       * vrtxVoisinsPrint(v) : Affiche les voisins d'un sommet.
  *   - Lecture et traitement de fichiers :
  *       * readFile(fname, actionOnLine, ret) : Lit un fichier et applique une fonction aux lignes.
@@ -77,6 +80,7 @@ void listePrint(LiAdj* li);
 VrtxVoisin* vrtxVoisinInit(uint32_t id);
 void vrtxVoisinsFree(VrtxVoisin* v);
 uint32_t vrtxDeg(VrtxVoisin* vrtx);
+uint8_t vrtxEstVoisin(VrtxVoisin* vrtx, uint32_t voiz);
 void vrtxVoisinsPrint(VrtxVoisin* v);
 
 void readFile(char* fname, void (*actionOnLine)(uint32_t va, uint32_t vb, void* ret), void* ret);

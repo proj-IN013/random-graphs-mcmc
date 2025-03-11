@@ -381,7 +381,7 @@ int _edgeListeDoublon(uint32_t a, uint32_t b, uint32_t* tab, uint32_t tab_start,
     return 0;
 }
 
-void swap(LiAdj* li, uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint8_t do_test=2) {
+void swap(LiAdj* li, uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint8_t do_test) {
     if (do_test >= 1) {
         assert(areteExiste(li, a, c) == 0);
         assert(areteExiste(li, b, d) == 0);
