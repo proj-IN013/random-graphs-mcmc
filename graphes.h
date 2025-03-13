@@ -62,17 +62,20 @@ void listePrint(LiAdj* li);
  *   - Lecture et traitement de fichiers :
  *       * readFile(fname, actionOnLine, ret) : Lit un fichier et applique une fonction aux lignes.
  *       * countVrtx(fname) : Compte le nombre de sommets uniques dans un fichier.
+ *       * loadConfigModel(fname, max_deg) : Charge un modèle de config en mémoire.
  *       * _printline(va, vb, test) : Fonction interne pour afficher une arête.
  *       * _unique_vrtx_liste(va, vb, li) : Fonction interne pour ajouter les deux sommets d'une arrète à une liste.
  *       * _edges_liste(va, vb, li) : Fonction interne pour ajouter une arête à la liste d'adjacence.
+ *       * _config_model_tab(va, vb, tab) : Fonction interne pour ajouter valeur vb à un tableau, en va.
  *   - Manipulations et transformations de tableaux :
  *       * swapTab(tab, i, k) : Échange deux éléments d'un tableau.
  *       * shuffle(tab, size) : Mélange un tableau.
- *       * sortEdgetab(tab, tab_size) : Trie les semi-arêtes en évitant les doublons.
+ *       * sortEdgetab(tab, tab_size) : Trie les semi-arêtes en évitant les doublons, renvoie NULL si echec.
+ *       * iterSortEdgetab(tab, tab_size, max_iter) : Appelle sortEdgetab jusqu'a son succès, max_iter fois. renvoie NULL sinon.
  *       * printtab(tab, tab_size); : Affiche le contenu d'un tableau.
  *   - Analyse et génération de structures de graphes :
  *       * tabCountsOcc(degs, size_degs, size_occ) : Calcule l'occurrence des degrés.
- *       * tabEdgesConfig(occ, size_occ, edges_size) : Génère un tableau de semi-arêtes à partir d'une distribution de degrés.
+ *       * tabEdgesConfig(occ, size_occ, edges_size, graph_size) : Génère un tableau de semi-arêtes à partir d'une distribution de degrés.
  *       * _edgeListeDoublon(a, b, tab, tab_start, tab_size) : Vérifie si une arête est déjà présente dans un tableau de semi-arêtes.
  *       * swap(li, a, b, c, d, do_test) : échange deux arrêtes (a, b) et (c, d) qui deviennent (a, c) et (b, d), do_test=1 teste les arêtes d'arrivée, do_test=2 teste aussi les arêtes en entrée.
  */
@@ -83,19 +86,22 @@ uint32_t vrtxDeg(VrtxVoisin* vrtx);
 uint8_t vrtxEstVoisin(VrtxVoisin* vrtx, uint32_t voiz);
 void vrtxVoisinsPrint(VrtxVoisin* v);
 
-void readFile(char* fname, void (*actionOnLine)(uint32_t va, uint32_t vb, void* ret), void* ret);
+void readFile(char* fname, void (*actionOnLine)(uint32_t va, uint32_t vb, void* ret), void* ret, int do_remove_header);
 uint32_t countVrtx(char* fname);
+uint32_t* loadConfigModel(char* fname, int max_deg);
 void _printline(uint32_t va, uint32_t vb, void* test);
 void _unique_vrtx_liste(uint32_t va, uint32_t vb, void* li);
 void _edges_liste(uint32_t va, uint32_t vb, void* li);
+void _config_model_tab(uint32_t va, uint32_t vb, void* tab);
 
 void swapTab(uint32_t* tab, uint32_t i, uint32_t k);
 void shuffle(uint32_t* tab, uint32_t size);
 uint32_t* sortEdgetab(uint32_t* tab, uint32_t tab_size);
+int iterSortEdgetab(uint32_t* tab, uint32_t tab_size, int max_iter);
 void printtab(uint32_t* tab, uint32_t tab_size);
 
 uint32_t* tabCountsOcc(uint32_t* degs, uint32_t size_degs, uint32_t* size_occ);
-uint32_t* tabEdgesConfig(uint32_t* occ, uint32_t size_occ, uint32_t* edges_size);
+uint32_t* tabEdgesConfig(uint32_t* occ, uint32_t size_occ, uint32_t* edges_size, uint32_t* graph_size);
 int _edgeListeDoublon(uint32_t a, uint32_t b, uint32_t* tab, uint32_t tab_start, uint32_t tab_size);
 void swap(LiAdj* li, uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint8_t do_test);
 

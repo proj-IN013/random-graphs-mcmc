@@ -95,7 +95,7 @@ uint8_t areteExiste(LiAdj* li, uint32_t va, uint32_t vb) {
 
 LiAdj* listeLoad(char* fname) {
     LiAdj* li = listeInit( countVrtx(fname) );
-    readFile(fname, &_edges_liste, li);
+    readFile(fname, &_edges_liste, li, 1);
     return li;
 }
 
@@ -225,12 +225,14 @@ void vrtxVoisinsPrint(VrtxVoisin* vrtx) {
 }
 
 
-void readFile(char* fname, void (*actionOnLine)(uint32_t va, uint32_t vb, void* ret), void* ret) {
+void readFile(char* fname, void (*actionOnLine)(uint32_t va, uint32_t vb, void* ret), void* ret, int do_remove_header) {
     FILE* fic = fopen(fname, "r");
     assert(fic);
 
-    char header[256];  // pas de données sur la première ligne
-    fgets(header, 256, fic);
+    if (do_remove_header == 1) {
+        char header[256];  // pas de données sur la première ligne
+        fgets(header, 256, fic);
+    }
 
     uint32_t va = UINT32_MAX, vb = UINT32_MAX;
     fscanf(fic, "%" PRIu32 "\t%" PRIu32 " ", &va, &vb);
@@ -243,10 +245,17 @@ void readFile(char* fname, void (*actionOnLine)(uint32_t va, uint32_t vb, void* 
 
 uint32_t countVrtx(char* fname) {
     LiAdj* li = listeInit(1); // on utilise une liste d'adjacence de taille 1:N pour compter les voisins
-    readFile(fname, &_unique_vrtx_liste, li);
+    readFile(fname, &_unique_vrtx_liste, li, 1);
     uint32_t nb = li->nb_edges;
     listeFree(li);
     return nb;
+}
+
+uint32_t* loadConfigModel(char* fname, int max_deg) {
+    uint32_t* tab = (uint32_t*)malloc(sizeof(uint32_t)*(max_deg+1));
+    for (int i=0; i<max_deg; i++) tab[i] = 0;
+    readFile(fname, &_config_model_tab, tab, 0);
+    return tab;
 }
 
 void _printline(uint32_t va, uint32_t vb, void* test) {
@@ -262,6 +271,10 @@ void _edges_liste(uint32_t va, uint32_t vb, void* li) {
     listeAdd(li, va, vb);
 }
 
+void _config_model_tab(uint32_t va, uint32_t vb, void* tab) {
+    va++;vb++;
+    ((uint32_t*)tab)[va] = vb;
+}
 
 void swapTab(uint32_t* tab, uint32_t i, uint32_t k) {
     assert(tab);
@@ -297,12 +310,27 @@ uint32_t* sortEdgetab(uint32_t* tab, uint32_t tab_size) {
         while ((tab[0] == tab[j] ||
                 _edgeListeDoublon(tab[0], tab[j], tab, tab_size-2*i, 2*i))
                && j < tab_size-2*i) j++;
+        if (j >= tab_size-2*i) return NULL;
         swapTab(tab, 0, tab_size -2*(i+1));
         swapTab(tab, j, tab_size -2*i- 1);
         swapTab(tab, 1, j);
     }
 
     return tab;
+}
+
+int iterSortEdgetab(uint32_t* tab, uint32_t tab_size, int max_iter) {
+    assert(tab != NULL && tab_size > 0 && max_iter < 1000);
+
+    int i=0;
+    uint32_t* ret;
+    do {
+        ret = tab;
+        ret = sortEdgetab(ret, tab_size);
+        i++;
+    }
+    while (ret==NULL && i<max_iter);
+    return i;
 }
 
 void printtab(uint32_t* tab, uint32_t tab_size) {
@@ -338,15 +366,17 @@ uint32_t* tabCountsOcc(uint32_t* degs, uint32_t size_degs, uint32_t* size_occ) {
     return occ;
 }
 
-uint32_t* tabEdgesConfig(uint32_t* occ, uint32_t size_occ, uint32_t* edges_size) {
+uint32_t* tabEdgesConfig(uint32_t* occ, uint32_t size_occ, uint32_t* edges_size, uint32_t* graph_size) {
     assert(occ && size_occ != 0);
 
-    uint32_t nb_edges = 0;
+    uint32_t nb_half_edges = 0;
+    uint32_t nb_vrtx = 0;
     uint32_t i, j, k;
     for (i=0; i<size_occ; i++) {
-        nb_edges += occ[i] * i;
+        nb_half_edges += occ[i] * i;
+        nb_vrtx += occ[i];
     }
-    uint32_t* edges = (uint32_t*)malloc(nb_edges * sizeof(uint32_t));
+    uint32_t* edges = (uint32_t*)malloc(nb_half_edges * sizeof(uint32_t));
     assert(edges);
 
     uint32_t vrtx_id = 0, edge_id = 0;
@@ -359,8 +389,9 @@ uint32_t* tabEdgesConfig(uint32_t* occ, uint32_t size_occ, uint32_t* edges_size)
             vrtx_id++;
         }
     }
-    shuffle(edges, nb_edges);
-    *edges_size = nb_edges;
+    shuffle(edges, nb_half_edges);
+    *edges_size = nb_half_edges;
+    *graph_size = nb_vrtx;
     return edges;
 }
 
