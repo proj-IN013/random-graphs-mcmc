@@ -48,7 +48,7 @@ uint8_t areteExiste(LiAdj* li, uint32_t va, uint32_t vb);
 LiAdj* listeLoad(char* fname);
 LiAdj* tabEdges2Liste(uint32_t nb_vrtx, uint32_t* tab, uint32_t tab_size);
 LiAdj* erdosRenyi(uint32_t n, uint32_t m);
-void listeDegDistrib(LiAdj* li);
+void listeDegDistrib(LiAdj* li, char* nom_plot);
 void listePrintStats(LiAdj* li);
 void listePrint(LiAdj* li);
 
@@ -62,15 +62,17 @@ void listePrint(LiAdj* li);
  *   - Lecture et traitement de fichiers :
  *       * readFile(fname, actionOnLine, ret) : Lit un fichier et applique une fonction aux lignes.
  *       * countVrtx(fname) : Compte le nombre de sommets uniques dans un fichier.
- *       * loadConfigModel(fname, max_deg) : Charge un modèle de config en mémoire.
+ *       * loadConfigModel(fname, size_config_model) : Charge un modèle de config en mémoire, et enregistre sa taille dans size_config_model.
  *       * _printline(va, vb, test) : Fonction interne pour afficher une arête.
  *       * _unique_vrtx_liste(va, vb, li) : Fonction interne pour ajouter les deux sommets d'une arrète à une liste.
  *       * _edges_liste(va, vb, li) : Fonction interne pour ajouter une arête à la liste d'adjacence.
+ *       * _find_max(va, vb, max) : Fonction interne pour trouver le Max dans la première col d'un fichier.
  *       * _config_model_tab(va, vb, tab) : Fonction interne pour ajouter valeur vb à un tableau, en va.
  *   - Manipulations et transformations de tableaux :
  *       * swapTab(tab, i, k) : Échange deux éléments d'un tableau.
  *       * shuffle(tab, size) : Mélange un tableau.
  *       * sortEdgetab(tab, tab_size) : Trie les semi-arêtes en évitant les doublons, renvoie NULL si echec.
+ *       * repeatedSortEdgetab(tab, tab_size, max_iter) : Appelle sortEdgetab en ré-itérant avec le resultat presque trié de l'étape précédente, jusqu'a son succès, max_iter fois. renvoie NULL sinon.
  *       * iterSortEdgetab(tab, tab_size, max_iter) : Appelle sortEdgetab jusqu'a son succès, max_iter fois. renvoie NULL sinon.
  *       * printtab(tab, tab_size); : Affiche le contenu d'un tableau.
  *   - Analyse et génération de structures de graphes :
@@ -88,15 +90,17 @@ void vrtxVoisinsPrint(VrtxVoisin* v);
 
 void readFile(char* fname, void (*actionOnLine)(uint32_t va, uint32_t vb, void* ret), void* ret, int do_remove_header);
 uint32_t countVrtx(char* fname);
-uint32_t* loadConfigModel(char* fname, int max_deg);
+uint32_t* loadConfigModel(char* fname, uint32_t* size_config_model);
 void _printline(uint32_t va, uint32_t vb, void* test);
 void _unique_vrtx_liste(uint32_t va, uint32_t vb, void* li);
 void _edges_liste(uint32_t va, uint32_t vb, void* li);
+void _find_max(uint32_t va, uint32_t vb, void* max);
 void _config_model_tab(uint32_t va, uint32_t vb, void* tab);
 
 void swapTab(uint32_t* tab, uint32_t i, uint32_t k);
 void shuffle(uint32_t* tab, uint32_t size);
-uint32_t* sortEdgetab(uint32_t* tab, uint32_t tab_size);
+uint32_t* sortEdgetab(uint32_t* tab, uint32_t tab_size, uint32_t* faulty_edges);
+int repeatedSortEdgetab(uint32_t* tab, uint32_t tab_size, int max_iter);
 int iterSortEdgetab(uint32_t* tab, uint32_t tab_size, int max_iter);
 void printtab(uint32_t* tab, uint32_t tab_size);
 

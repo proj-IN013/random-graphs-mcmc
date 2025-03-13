@@ -126,8 +126,7 @@ LiAdj* erdosRenyi(uint32_t n, uint32_t m) {
     return li;
 }
 
-void listeDegDistrib(LiAdj* li) {
-    char *nom_plot = "test.txt";
+void listeDegDistrib(LiAdj* li, char* nom_plot) {
     FILE *plot = fopen(nom_plot, "w");
 
     assert(li);
@@ -144,7 +143,7 @@ void listeDegDistrib(LiAdj* li) {
     uint32_t *occ = tabCountsOcc(degs, li->nb_vrtx, &size_occ);
     free(degs);
     for (uint32_t i=0; i<size_occ; i++) {
-        if (occ[i] == 0 && i!=0 && i!=size_occ-1) continue;
+        if (occ[i] == 0 && i!=size_occ-1) continue;
         fprintf(plot, "%d %d\n", i, occ[i]);
     }
     free(occ);
@@ -251,9 +250,12 @@ uint32_t countVrtx(char* fname) {
     return nb;
 }
 
-uint32_t* loadConfigModel(char* fname, int max_deg) {
-    uint32_t* tab = (uint32_t*)malloc(sizeof(uint32_t)*(max_deg+1));
-    for (int i=0; i<max_deg; i++) tab[i] = 0;
+uint32_t* loadConfigModel(char* fname, uint32_t* size_config_model) {
+    *size_config_model = 0;
+    readFile(fname, &_find_max, size_config_model, 0);
+    (*size_config_model)++;
+    uint32_t* tab = (uint32_t*)malloc(sizeof(uint32_t)* (*size_config_model) );
+    for (uint32_t i=0; i< *size_config_model; i++) tab[i] = 0;
     readFile(fname, &_config_model_tab, tab, 0);
     return tab;
 }
@@ -269,6 +271,12 @@ void _unique_vrtx_liste(uint32_t va, uint32_t vb, void* li) {
 
 void _edges_liste(uint32_t va, uint32_t vb, void* li) {
     listeAdd(li, va, vb);
+}
+
+void _find_max(uint32_t va, uint32_t vb, void* max) {
+    va++;vb++;
+    if (va > *(uint32_t*)max) *(uint32_t*)max = va;
+    (void)vb;
 }
 
 void _config_model_tab(uint32_t va, uint32_t vb, void* tab) {
@@ -301,7 +309,7 @@ void shuffle(uint32_t* tab, uint32_t size) {
     free(shuffled);
 }
 
-uint32_t* sortEdgetab(uint32_t* tab, uint32_t tab_size) {
+uint32_t* sortEdgetab(uint32_t* tab, uint32_t tab_size, uint32_t* faulty_edges) {
     assert(tab != NULL && tab_size > 0);
 
     uint32_t i, j;
@@ -310,26 +318,47 @@ uint32_t* sortEdgetab(uint32_t* tab, uint32_t tab_size) {
         while ((tab[0] == tab[j] ||
                 _edgeListeDoublon(tab[0], tab[j], tab, tab_size-2*i, 2*i))
                && j < tab_size-2*i) j++;
-        if (j >= tab_size-2*i) return NULL;
+        if (j >= tab_size-2*i) {
+            *faulty_edges = tab_size/2-i;
+            return NULL;
+        }
         swapTab(tab, 0, tab_size -2*(i+1));
         swapTab(tab, j, tab_size -2*i- 1);
         swapTab(tab, 1, j);
     }
 
+    *faulty_edges = 0;
     return tab;
+}
+
+int repeatedSortEdgetab(uint32_t* tab, uint32_t tab_size, int max_iter) {
+    assert(tab != NULL && tab_size > 0 && max_iter < 1000);
+
+    int i=0;
+    uint32_t faulty_edges;
+    uint32_t* res;
+    do {
+        res = sortEdgetab(tab, tab_size, &faulty_edges);
+        printf("faulty edges : %d\n", faulty_edges);
+        i++;
+    }
+    while (res==NULL && i<max_iter);
+    return i;
 }
 
 int iterSortEdgetab(uint32_t* tab, uint32_t tab_size, int max_iter) {
     assert(tab != NULL && tab_size > 0 && max_iter < 1000);
 
     int i=0;
-    uint32_t* ret;
+    uint32_t faulty_edges;
+    uint32_t *res;
     do {
-        ret = tab;
-        ret = sortEdgetab(ret, tab_size);
+        shuffle(tab, tab_size);
+        res = sortEdgetab(tab, tab_size, &faulty_edges);
+        printf("faulty edges : %d\n", faulty_edges);
         i++;
     }
-    while (ret==NULL && i<max_iter);
+    while (res==NULL && i<max_iter);
     return i;
 }
 
