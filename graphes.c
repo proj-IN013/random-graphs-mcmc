@@ -169,6 +169,44 @@ void listePrint(LiAdj* li) {
     printf("\n");
 }
 
+void listeDraw(LiAdj* li, const char* graph_name, int do_open) {
+    assert(li && graph_name);
+    char dot_path[50];
+    char png_path[50];
+    snprintf(dot_path, 50, "../outputs/%s.dot", graph_name);
+    snprintf(png_path, 50, "../outputs/%s.png", graph_name);
+    FILE *fic = fopen(dot_path, "w");
+    assert(fic);
+
+    fprintf(fic, "graph G {\n");
+    for (uint32_t i = 0; i < li->nb_vrtx; i++) {
+        VrtxVoisin* voiz = li->L[i];
+        while (voiz) {
+            if (i < voiz->id) {
+                fprintf(fic, "    %d -- %d;\n", i+1, voiz->id+1);
+            }
+            voiz = voiz->next;
+        }
+    }
+    fprintf(fic, "}\n");
+    fclose(fic);
+
+    if (do_open == 1) {
+        if (fork() == 0) {
+            execl("/usr/bin/dot", "dot", "-Tpng", dot_path, "-o", png_path, NULL);
+            exit(EXIT_FAILURE);
+        } else wait(NULL);
+        if (fork() == 0) {
+            execl("/bin/rm", "rm", dot_path, NULL);
+            exit(EXIT_FAILURE);
+        } else wait(NULL);
+        if (fork() == 0) {
+            execl("/usr/bin/open", "open", png_path, NULL);
+            exit(EXIT_FAILURE);
+        } else wait(NULL);
+    }
+}
+
 // VOISINS : LISTE CHAINÉE
 
 VrtxVoisin* vrtxVoisinInit(uint32_t id) {

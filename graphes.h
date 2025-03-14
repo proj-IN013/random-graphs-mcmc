@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <stdint.h>
 #include <inttypes.h>
+#include <unistd.h>
 
 typedef struct _vrtx_voisin VrtxVoisin;
 struct _vrtx_voisin {
@@ -36,6 +37,7 @@ struct _liste_adjacence {
  *       * listeDegDistrib(li) : Calcule et enregistre la distribution des degrés.
  *       * listePrintStats(li) : Affiche le n et m du graphe.
  *       * listePrint(li) : Affiche la liste d'adjacence.
+ *       * listeDraw(li, graph_name, do_open) : Utilise Graphviz pour générer une représentation de li : graph_name.png
  */
 
 LiAdj* listeInit(uint32_t nb_vrtx);
@@ -51,6 +53,7 @@ LiAdj* erdosRenyi(uint32_t n, uint32_t m);
 void listeDegDistrib(LiAdj* li, char* nom_plot);
 void listePrintStats(LiAdj* li);
 void listePrint(LiAdj* li);
+void listeDraw(LiAdj* li, const char* graph_name, int do_open);
 
 /* Fonctions utilitaires :
  *   - Gestion des voisins :
