@@ -28,8 +28,8 @@ int main(void)
 {
     srand(time(NULL));
 
-    FILE *plot = startLog("../outputs/funcslogs.txt");
-    const uint32_t sizemax = 12;
+    FILE *plot = startLog("outputs/funcslogs.txt");
+    const uint32_t sizemax = 14;
     uint32_t config_tab[sizemax+1] = {0};
     for (uint32_t i=1; i<=ceil(sizemax/2.0); i++) {
         config_tab[i] = sizemax-i+1;
@@ -40,7 +40,7 @@ int main(void)
     printf("\n");
     exit(EXIT_SUCCESS);
     uint32_t size_cfg_mdl;
-    uint32_t* tabTest = loadConfigModel("../data/dd1.txt", &size_cfg_mdl);
+    uint32_t* tabTest = loadConfigModel("data/dd1.txt", &size_cfg_mdl);
     printtab(tabTest, size_cfg_mdl);
     uint32_t edges_size, graph_size;
     uint32_t* edges = tabEdgesConfig(tabTest, size_cfg_mdl, &edges_size, &graph_size);

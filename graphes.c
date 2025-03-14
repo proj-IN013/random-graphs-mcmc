@@ -189,8 +189,8 @@ void listeRender(LiAdj* li, char* graph_name, int do_open) {
     assert(li && graph_name);
     char dot_path[50];
     char png_path[50];
-    snprintf(dot_path, 50, "../outputs/%s.dot", graph_name);
-    snprintf(png_path, 50, "../outputs/%s.png", graph_name);
+    snprintf(dot_path, 50, "outputs/%s.dot", graph_name);
+    snprintf(png_path, 50, "outputs/%s.png", graph_name);
     FILE *fic = startLog(graph_name);
 
     fprintf(fic, "graph G {\n");
@@ -503,7 +503,7 @@ int _edgeListeDoublon(uint32_t a, uint32_t b, uint32_t* tab, uint32_t tab_start,
         if (tab[2*i] == b && tab[2*i+1] == a) {
             return 1;
         }
-    }
+
     return 0;
 }
 
