@@ -34,7 +34,8 @@ struct _liste_adjacence {
  *       * tabEdges2Liste(nb_vrtx, tab, tab_size) : Convertit un tableau d'arêtes en liste d'adjacence.
  *       * erdosRenyi(n, m) : Génère un graphe aléatoire selon le modèle d'Erdős-Rényi.
  *   - Analyse :
- *       * listeDegDistrib(li) : Calcule et enregistre la distribution des degrés.
+ *       * listeDegDistrib(li) : Calcule et renvoie la distribution des degrés.
+ *       * listeSaveDegDistrib(li) : Calcule et enregistre la distribution des degrés dans nom_plot.
  *       * listePrintStats(li) : Affiche le n et m du graphe.
  *       * listePrint(li) : Affiche la liste d'adjacence.
  *       * listeDraw(li, graph_name, do_open) : Utilise Graphviz pour générer une représentation de li : graph_name.png
@@ -50,10 +51,11 @@ uint8_t areteExiste(LiAdj* li, uint32_t va, uint32_t vb);
 LiAdj* listeLoad(char* fname);
 LiAdj* tabEdges2Liste(uint32_t nb_vrtx, uint32_t* tab, uint32_t tab_size);
 LiAdj* erdosRenyi(uint32_t n, uint32_t m);
-void listeDegDistrib(LiAdj* li, char* nom_plot);
+uint32_t* listeDegDistrib(LiAdj* li, uint32_t* tab_size);
+void listeSaveDegDistrib(LiAdj* li, char* nom_plot);
 void listePrintStats(LiAdj* li);
 void listePrint(LiAdj* li);
-void listeDraw(LiAdj* li, const char* graph_name, int do_open);
+void listeRender(LiAdj* li, const char* graph_name, int do_open);
 
 /* Fonctions utilitaires :
  *   - Gestion des voisins :

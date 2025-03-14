@@ -111,22 +111,42 @@ LiAdj* tabEdges2Liste(uint32_t nb_vrtx, uint32_t* tab, uint32_t tab_size) {
 }
 
 LiAdj* erdosRenyi(uint32_t n, uint32_t m) {
-    LiAdj* li = listeInit(n);
+    uint32_t unique_vrtx = 0, i = 1, max_attempts = 5;
 
-    srand(time(NULL));
-    double prob = 2*m;
-    prob /= n*(n+1); //     m ÷ (2 parmi n)
-    printf("prob : %f\n", prob);
+    while (i <= max_attempts) {
+        //float densite = 200*m;
+        //densite /= n*(n+1); //     m ÷ (2 parmi n)
+        //printf("densité : %.2f%%\n", densite);
 
-    for (uint32_t va=0; va<n; va++) {
-        for (uint32_t vb=va +1; vb<n; vb++) {  // on liste toutes les paires de vrtx possibles, sans doublons, sans boucles : n(n-1)/2
-            if (bernou(prob) == 1) listeAdd(li, va, vb);
+        LiAdj* li = listeInit(n);
+        unique_vrtx = 0;
+        for (uint32_t j=0; j<m; j++) {
+            int va = rand()%n, vb = rand()%n;
+            if (li->L[va] == NULL) unique_vrtx++;
+            if (li->L[vb] == NULL && va != vb) unique_vrtx++;
+            listeAdd(li, va, vb);
         }
+        if (unique_vrtx == n) return li;
+        listeFree(li);
+        i++;
     }
-    return li;
+    return NULL;
 }
 
-void listeDegDistrib(LiAdj* li, char* nom_plot) {
+uint32_t* listeDegDistrib(LiAdj* li, uint32_t* tab_size) {
+    assert(li && tab_size);
+    uint32_t *degs = (uint32_t*)malloc(li->nb_vrtx * sizeof(uint32_t));
+    assert(degs);
+    for (uint32_t i=0; i < li->nb_vrtx; i++) {
+        degs[i] = vrtxDeg(li->L[i]);
+    }
+    uint32_t *occ = tabCountsOcc(degs, li->nb_vrtx, tab_size);
+    free(degs);
+
+    return occ;
+}
+
+void listeSaveDegDistrib(LiAdj* li, char* nom_plot) {
     FILE *plot = fopen(nom_plot, "w");
 
     assert(li);
@@ -169,7 +189,7 @@ void listePrint(LiAdj* li) {
     printf("\n");
 }
 
-void listeDraw(LiAdj* li, const char* graph_name, int do_open) {
+void listeRender(LiAdj* li, const char* graph_name, int do_open) {
     assert(li && graph_name);
     char dot_path[50];
     char png_path[50];
@@ -190,10 +210,10 @@ void listeDraw(LiAdj* li, const char* graph_name, int do_open) {
     }
     fprintf(fic, "}\n");
     fclose(fic);
-
+    //-Kneato, -Kdot, -Kcirco
     if (do_open == 1) {
         if (fork() == 0) {
-            execl("/usr/bin/dot", "dot", "-Tpng", dot_path, "-o", png_path, NULL);
+            execl("/opt/homebrew/bin/dot", "dot", "-Tpng", "-Kcirco", dot_path, "-o", png_path, NULL);
             exit(EXIT_FAILURE);
         } else wait(NULL);
         if (fork() == 0) {
@@ -354,17 +374,15 @@ uint32_t* sortEdgetab(uint32_t* tab, uint32_t tab_size, uint32_t* faulty_edges) 
     for (i=0; i<tab_size/2; i++) {
         j = 1;
         while ((tab[0] == tab[j] ||
-                _edgeListeDoublon(tab[0], tab[j], tab, tab_size-2*i, 2*i))
+                _edgeListeDoublon(tab[0], tab[j], tab, tab_size-2*i, 2*i)==1)
                && j < tab_size-2*i) j++;
+        swapTab(tab, j, tab_size -2*i- 1);
+        swapTab(tab, 0, tab_size -2*(i+1));
         if (j >= tab_size-2*i) {
             *faulty_edges = tab_size/2-i;
             return NULL;
         }
-        swapTab(tab, 0, tab_size -2*(i+1));
-        swapTab(tab, j, tab_size -2*i- 1);
-        swapTab(tab, 1, j);
     }
-
     *faulty_edges = 0;
     return tab;
 }
