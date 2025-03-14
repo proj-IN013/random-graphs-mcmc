@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <inttypes.h>
 #include <unistd.h>
+#include <math.h>
 
 typedef struct _vrtx_voisin VrtxVoisin;
 struct _vrtx_voisin {
@@ -38,7 +39,7 @@ struct _liste_adjacence {
  *       * listeSaveDegDistrib(li) : Calcule et enregistre la distribution des degrés dans nom_plot.
  *       * listePrintStats(li) : Affiche le n et m du graphe.
  *       * listePrint(li) : Affiche la liste d'adjacence.
- *       * listeDraw(li, graph_name, do_open) : Utilise Graphviz pour générer une représentation de li : graph_name.png
+ *       * listeRender(li, graph_name, do_open) : Utilise Graphviz pour générer une représentation de li : graph_name.png
  */
 
 LiAdj* listeInit(uint32_t nb_vrtx);
@@ -55,7 +56,7 @@ uint32_t* listeDegDistrib(LiAdj* li, uint32_t* tab_size);
 void listeSaveDegDistrib(LiAdj* li, char* nom_plot);
 void listePrintStats(LiAdj* li);
 void listePrint(LiAdj* li);
-void listeRender(LiAdj* li, const char* graph_name, int do_open);
+void listeRender(LiAdj* li, char* graph_name, int do_open);
 
 /* Fonctions utilitaires :
  *   - Gestion des voisins :
@@ -73,13 +74,15 @@ void listeRender(LiAdj* li, const char* graph_name, int do_open);
  *       * _edges_liste(va, vb, li) : Fonction interne pour ajouter une arête à la liste d'adjacence.
  *       * _find_max(va, vb, max) : Fonction interne pour trouver le Max dans la première col d'un fichier.
  *       * _config_model_tab(va, vb, tab) : Fonction interne pour ajouter valeur vb à un tableau, en va.
+ *       * startLog(fname) : ouvre et vide un fichier.
  *   - Manipulations et transformations de tableaux :
  *       * swapTab(tab, i, k) : Échange deux éléments d'un tableau.
  *       * shuffle(tab, size) : Mélange un tableau.
  *       * sortEdgetab(tab, tab_size) : Trie les semi-arêtes en évitant les doublons, renvoie NULL si echec.
  *       * repeatedSortEdgetab(tab, tab_size, max_iter) : Appelle sortEdgetab en ré-itérant avec le resultat presque trié de l'étape précédente, jusqu'a son succès, max_iter fois. renvoie NULL sinon.
  *       * iterSortEdgetab(tab, tab_size, max_iter) : Appelle sortEdgetab jusqu'a son succès, max_iter fois. renvoie NULL sinon.
- *       * printtab(tab, tab_size); : Affiche le contenu d'un tableau.
+ *       * printtab(tab, tab_size) : Affiche le contenu d'un tableau.
+ *       * duptab(tab, tab_size) : Duplique et renvoie le contenu d'un tableau.
  *   - Analyse et génération de structures de graphes :
  *       * tabCountsOcc(degs, size_degs, size_occ) : Calcule l'occurrence des degrés.
  *       * tabEdgesConfig(occ, size_occ, edges_size, graph_size) : Génère un tableau de semi-arêtes à partir d'une distribution de degrés.
@@ -101,13 +104,15 @@ void _unique_vrtx_liste(uint32_t va, uint32_t vb, void* li);
 void _edges_liste(uint32_t va, uint32_t vb, void* li);
 void _find_max(uint32_t va, uint32_t vb, void* max);
 void _config_model_tab(uint32_t va, uint32_t vb, void* tab);
+FILE* startLog(char* fname);
 
 void swapTab(uint32_t* tab, uint32_t i, uint32_t k);
 void shuffle(uint32_t* tab, uint32_t size);
 uint32_t* sortEdgetab(uint32_t* tab, uint32_t tab_size, uint32_t* faulty_edges);
-int repeatedSortEdgetab(uint32_t* tab, uint32_t tab_size, int max_iter);
-int iterSortEdgetab(uint32_t* tab, uint32_t tab_size, int max_iter);
+uint32_t repeatedSortEdgetab(uint32_t* tab, uint32_t tab_size, uint32_t max_iter);
+uint32_t iterSortEdgetab(uint32_t* tab, uint32_t tab_size, uint32_t max_iter);
 void printtab(uint32_t* tab, uint32_t tab_size);
+uint32_t* duptab(uint32_t* tab, uint32_t tab_size);
 
 uint32_t* tabCountsOcc(uint32_t* degs, uint32_t size_degs, uint32_t* size_occ);
 uint32_t* tabEdgesConfig(uint32_t* occ, uint32_t size_occ, uint32_t* edges_size, uint32_t* graph_size);

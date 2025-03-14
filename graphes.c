@@ -147,12 +147,8 @@ uint32_t* listeDegDistrib(LiAdj* li, uint32_t* tab_size) {
 }
 
 void listeSaveDegDistrib(LiAdj* li, char* nom_plot) {
-    FILE *plot = fopen(nom_plot, "w");
-
     assert(li);
-    assert(plot);
-    fclose(plot);
-    plot = fopen(nom_plot, "a");
+    FILE* plot = startLog(nom_plot);
 
     uint32_t *degs = (uint32_t*)malloc(li->nb_vrtx * sizeof(uint32_t));
     assert(degs);
@@ -189,14 +185,13 @@ void listePrint(LiAdj* li) {
     printf("\n");
 }
 
-void listeRender(LiAdj* li, const char* graph_name, int do_open) {
+void listeRender(LiAdj* li, char* graph_name, int do_open) {
     assert(li && graph_name);
     char dot_path[50];
     char png_path[50];
     snprintf(dot_path, 50, "../outputs/%s.dot", graph_name);
     snprintf(png_path, 50, "../outputs/%s.png", graph_name);
-    FILE *fic = fopen(dot_path, "w");
-    assert(fic);
+    FILE *fic = startLog(graph_name);
 
     fprintf(fic, "graph G {\n");
     for (uint32_t i = 0; i < li->nb_vrtx; i++) {
@@ -313,6 +308,7 @@ uint32_t* loadConfigModel(char* fname, uint32_t* size_config_model) {
     readFile(fname, &_find_max, size_config_model, 0);
     (*size_config_model)++;
     uint32_t* tab = (uint32_t*)malloc(sizeof(uint32_t)* (*size_config_model) );
+    assert(tab);
     for (uint32_t i=0; i< *size_config_model; i++) tab[i] = 0;
     readFile(fname, &_config_model_tab, tab, 0);
     return tab;
@@ -342,6 +338,13 @@ void _config_model_tab(uint32_t va, uint32_t vb, void* tab) {
     ((uint32_t*)tab)[va] = vb;
 }
 
+FILE* startLog(char* fname) {
+    FILE *fic = fopen(fname, "w");
+    assert(fic);
+    fclose(fic);
+    return fopen(fname, "a");
+}
+
 void swapTab(uint32_t* tab, uint32_t i, uint32_t k) {
     assert(tab);
 
@@ -351,9 +354,8 @@ void swapTab(uint32_t* tab, uint32_t i, uint32_t k) {
 }
 
 void shuffle(uint32_t* tab, uint32_t size) {
-    srand(time(NULL));
     uint32_t* shuffled = (uint32_t*)malloc(size * sizeof(uint32_t));
-    assert(shuffle);
+    assert(shuffled);
     assert(tab);
     uint32_t i, k;
 
@@ -387,31 +389,29 @@ uint32_t* sortEdgetab(uint32_t* tab, uint32_t tab_size, uint32_t* faulty_edges) 
     return tab;
 }
 
-int repeatedSortEdgetab(uint32_t* tab, uint32_t tab_size, int max_iter) {
-    assert(tab != NULL && tab_size > 0 && max_iter < 1000);
+uint32_t repeatedSortEdgetab(uint32_t* tab, uint32_t tab_size, uint32_t max_iter) {
+    assert(tab != NULL && tab_size > 0);
 
-    int i=0;
+    uint32_t i=0;
     uint32_t faulty_edges;
     uint32_t* res;
     do {
         res = sortEdgetab(tab, tab_size, &faulty_edges);
-        printf("faulty edges : %d\n", faulty_edges);
         i++;
     }
     while (res==NULL && i<max_iter);
     return i;
 }
 
-int iterSortEdgetab(uint32_t* tab, uint32_t tab_size, int max_iter) {
-    assert(tab != NULL && tab_size > 0 && max_iter < 1000);
+uint32_t iterSortEdgetab(uint32_t* tab, uint32_t tab_size, uint32_t max_iter) {
+    assert(tab != NULL && tab_size > 0);
 
-    int i=0;
+    uint32_t i=0;
     uint32_t faulty_edges;
     uint32_t *res;
     do {
         shuffle(tab, tab_size);
         res = sortEdgetab(tab, tab_size, &faulty_edges);
-        printf("faulty edges : %d\n", faulty_edges);
         i++;
     }
     while (res==NULL && i<max_iter);
@@ -426,6 +426,16 @@ void printtab(uint32_t* tab, uint32_t tab_size) {
         printf("%d, ", tab[i]);
     }
     printf("%d]\n", tab[tab_size-1]);
+}
+
+uint32_t* duptab(uint32_t* tab, uint32_t tab_size) {
+    assert(tab && tab_size);
+
+    uint32_t* newtab = (uint32_t*)malloc(sizeof(uint32_t)*tab_size);
+    for (uint32_t i=0; i<tab_size-1; i++) {
+        newtab[i] = tab[i];
+    }
+    return newtab;
 }
 
 
