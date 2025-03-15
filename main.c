@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "Pcolors.h"
 
 #define MAX_ITER 100000
 
@@ -28,6 +27,8 @@ int main(void)
 {
     srand(time(NULL));
 
+    Pred();printf("CONFIG MODEL ERDOS RENYI\n\n");Preset();
+
     FILE *plot = startLog("outputs/funcslogs.txt");
     const uint32_t sizemax = 14;
     uint32_t config_tab[sizemax+1] = {0};
@@ -37,21 +38,5 @@ int main(void)
         genfromdist(plot, config_tab, sizemax+1, 20);
     }
     fclose(plot);
-    printf("\n");
-    exit(EXIT_SUCCESS);
-    uint32_t size_cfg_mdl;
-    uint32_t* tabTest = loadConfigModel("data/dd1.txt", &size_cfg_mdl);
-    printtab(tabTest, size_cfg_mdl);
-    uint32_t edges_size, graph_size;
-    uint32_t* edges = tabEdgesConfig(tabTest, size_cfg_mdl, &edges_size, &graph_size);
-    int tries = iterSortEdgetab(edges, edges_size, 15);
-    printf("%d essais, taille : %d\n", tries, edges_size);
-    LiAdj* li = tabEdges2Liste(graph_size,edges, edges_size);
-    //listePrintStats(li);
-    //listePrint(li);
-    //listeSaveDegDistrib(li, "test.txt");
-    listeFree(li);
-
-    Pred();printf("CONFIG MODEL ERDOS RENYI\n\n");Preset();
     return 0;
 }

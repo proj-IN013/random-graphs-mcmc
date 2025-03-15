@@ -32,25 +32,25 @@ int listeAddSingle(LiAdj* li, uint32_t vrtx, uint32_t vzn_id) {
     assert(li != NULL);
     assert(vrtx >= 0 && vzn_id >= 0);
     assert(vrtx < li->nb_vrtx);
+    if (vrtx == vzn_id) return -1;
 
-    if (li->L[vrtx] == NULL) {
-        li->L[vrtx] = vrtxVoisinInit(vzn_id);
+    if (li->L[vrtx] == NULL || li->L[vrtx]->id > vzn_id) {
+        li->L[vrtx] = vrtxVoisinInit(vzn_id, li->L[vrtx]);
         li->nb_edges += 1;
-        return 1;
+        return 0;
     }
 
     VrtxVoisin* voisin = li->L[vrtx];
-
-    if (voisin->id == vzn_id) return 0;
-    while (voisin->next != NULL) {
-        if (voisin->next->id == vzn_id) return 0;
+    if (voisin->id == vzn_id) return -1;
+    while (voisin->next != NULL && voisin->next->id <= vzn_id) {
+        if (voisin->next->id == vzn_id) return -1;
         voisin = voisin->next;
     }
 
-    VrtxVoisin* new = vrtxVoisinInit(vzn_id);
+    VrtxVoisin* new = vrtxVoisinInit(vzn_id, voisin->next);
     voisin->next = new;
     li->nb_edges += 1;
-    return 1;
+    return 0;
 }
 
 void listeAdd(LiAdj* li, uint32_t va, uint32_t vb) {
@@ -121,7 +121,8 @@ LiAdj* erdosRenyi(uint32_t n, uint32_t m) {
         LiAdj* li = listeInit(n);
         unique_vrtx = 0;
         for (uint32_t j=0; j<m; j++) {
-            int va = rand()%n, vb = rand()%n;
+            int va = rand()%n, gap = rand()%(n-1) +1;
+            int vb = (va + gap)%n;
             if (li->L[va] == NULL) unique_vrtx++;
             if (li->L[vb] == NULL && va != vb) unique_vrtx++;
             listeAdd(li, va, vb);
@@ -191,7 +192,7 @@ void listeRender(LiAdj* li, char* graph_name, int do_open) {
     char png_path[50];
     snprintf(dot_path, 50, "outputs/%s.dot", graph_name);
     snprintf(png_path, 50, "outputs/%s.png", graph_name);
-    FILE *fic = startLog(graph_name);
+    FILE *fic = startLog(dot_path);
 
     fprintf(fic, "graph G {\n");
     for (uint32_t i = 0; i < li->nb_vrtx; i++) {
@@ -224,14 +225,14 @@ void listeRender(LiAdj* li, char* graph_name, int do_open) {
 
 // VOISINS : LISTE CHAINÉE
 
-VrtxVoisin* vrtxVoisinInit(uint32_t id) {
+VrtxVoisin* vrtxVoisinInit(uint32_t id, VrtxVoisin* next) {
     assert(id >= 0);
 
     VrtxVoisin* new_vrtx = (VrtxVoisin*)malloc(sizeof(VrtxVoisin));
     assert(new_vrtx);
 
     new_vrtx->id = id;
-    new_vrtx->next = NULL;
+    new_vrtx->next = next;
     return new_vrtx;
 }
 
@@ -267,8 +268,6 @@ uint8_t vrtxEstVoisin(VrtxVoisin* vrtx, uint32_t voiz) {
 }
 
 void vrtxVoisinsPrint(VrtxVoisin* vrtx) {
-    if (vrtx == NULL) return;
-
     while (vrtx != NULL) {
         printf("%d ", vrtx->id +1);
         vrtx = vrtx->next;
@@ -503,6 +502,7 @@ int _edgeListeDoublon(uint32_t a, uint32_t b, uint32_t* tab, uint32_t tab_start,
         if (tab[2*i] == b && tab[2*i+1] == a) {
             return 1;
         }
+    }
 
     return 0;
 }

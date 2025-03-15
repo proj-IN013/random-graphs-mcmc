@@ -6,6 +6,7 @@
 #include <inttypes.h>
 #include <unistd.h>
 #include <math.h>
+#include "Pcolors.h"
 
 typedef struct _vrtx_voisin VrtxVoisin;
 struct _vrtx_voisin {
@@ -60,7 +61,7 @@ void listeRender(LiAdj* li, char* graph_name, int do_open);
 
 /* Fonctions utilitaires :
  *   - Gestion des voisins :
- *       * vrtxVoisinInit(id) : Initialise un voisin.
+ *       * vrtxVoisinInit(id, next) : Initialise un voisin.
  *       * vrtxVoisinsFree(v) : Libère la mémoire des voisins.
  *       * vrtxDeg(vrtx) : Calcule le degré d'un sommet.
  *       * vrtxEstVoisin(vrtx, voiz) : renvoie 1 si voiz est un voisin de vrtx, 0 sinon
@@ -90,7 +91,7 @@ void listeRender(LiAdj* li, char* graph_name, int do_open);
  *       * swap(li, a, b, c, d, do_test) : échange deux arrêtes (a, b) et (c, d) qui deviennent (a, c) et (b, d), do_test=1 teste les arêtes d'arrivée, do_test=2 teste aussi les arêtes en entrée.
  */
 
-VrtxVoisin* vrtxVoisinInit(uint32_t id);
+VrtxVoisin* vrtxVoisinInit(uint32_t id, VrtxVoisin* next);
 void vrtxVoisinsFree(VrtxVoisin* v);
 uint32_t vrtxDeg(VrtxVoisin* vrtx);
 uint8_t vrtxEstVoisin(VrtxVoisin* vrtx, uint32_t voiz);
