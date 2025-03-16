@@ -121,3 +121,7 @@ int _edgeListeDoublon(uint32_t a, uint32_t b, uint32_t* tab, uint32_t tab_start,
 void swap(LiAdj* li, uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint8_t do_test);
 
 int bernou(double prob);
+
+
+
+uint32_t compterTriangles(LiAdj* li);

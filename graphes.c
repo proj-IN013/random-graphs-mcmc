@@ -533,3 +533,41 @@ int bernou(double prob) {
     if (randFl <= prob) return 1;
     else return 0;
 }
+
+
+
+
+
+
+
+#include <stdint.h>
+#include <assert.h>
+
+uint32_t compterTriangles(LiAdj* li) {
+    assert(li);
+
+    uint32_t nb_triang = 0;
+    for (uint32_t a = 0; a < li->nb_vrtx; a++) {
+        VrtxVoisin* vA = li->L[a];
+        while (vA != NULL) {
+            uint32_t b = vA->id;
+            // pas faire doublons
+            if (b > a) {
+                VrtxVoisin* vB = li->L[b];
+                while (vB != NULL) {
+                    uint32_t c = vB->id;
+                    if (c > b && c > a) {
+                        if (vrtxEstVoisin(li->L[a], c)) {
+                            nb_triang++;
+                        }
+                    }
+                    vB = vB->next;
+                }
+            }
+            vA = vA->next;
+        }
+    }
+
+    return nb_triang;
+}
+

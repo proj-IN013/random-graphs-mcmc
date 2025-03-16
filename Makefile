@@ -25,3 +25,8 @@ clean:
 run: $(PROGRAM)
 	./$(PROGRAM)
 
+total: clean
+	make
+	./$(PROGRAM)
+
+
