@@ -79,9 +79,8 @@ void listeRender(LiAdj* li, char* graph_name, int do_open);
  *   - Manipulations et transformations de tableaux :
  *       * swapTab(tab, i, k) : Échange deux éléments d'un tableau.
  *       * shuffle(tab, size) : Mélange un tableau.
- *       * sortEdgetab(tab, tab_size) : Trie les semi-arêtes en évitant les doublons, renvoie NULL si echec.
- *       * repeatedSortEdgetab(tab, tab_size, max_iter) : Appelle sortEdgetab en ré-itérant avec le resultat presque trié de l'étape précédente, jusqu'a son succès, max_iter fois. renvoie NULL sinon.
- *       * iterSortEdgetab(tab, tab_size, max_iter) : Appelle sortEdgetab jusqu'a son succès, max_iter fois. renvoie NULL sinon.
+ *       * sortEdgetab(tab, tab_size) : Trie les semi-arêtes, renvoie NULL si echec.
+ *       * iterSortEdgetab(tab, tab_size, max_iter, nb_tries) : Appelle sortEdgetab jusqu'a son succès, max_iter fois. renvoie NULL sinon.
  *       * printtab(tab, tab_size) : Affiche le contenu d'un tableau.
  *       * duptab(tab, tab_size) : Duplique et renvoie le contenu d'un tableau.
  *   - Analyse et génération de structures de graphes :
@@ -109,9 +108,8 @@ FILE* startLog(char* fname);
 
 void swapTab(uint32_t* tab, uint32_t i, uint32_t k);
 void shuffle(uint32_t* tab, uint32_t size);
-uint32_t* sortEdgetab(uint32_t* tab, uint32_t tab_size, uint32_t* faulty_edges);
-uint32_t repeatedSortEdgetab(uint32_t* tab, uint32_t tab_size, uint32_t max_iter);
-uint32_t iterSortEdgetab(uint32_t* tab, uint32_t tab_size, uint32_t max_iter);
+uint32_t* sortEdgetab(uint32_t* tab, uint32_t tab_size);
+uint32_t* iterSortEdgetab(uint32_t* tab, uint32_t tab_size, uint32_t max_iter, uint32_t* nb_tries);
 void printtab(uint32_t* tab, uint32_t tab_size);
 uint32_t* duptab(uint32_t* tab, uint32_t tab_size);
 
