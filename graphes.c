@@ -368,53 +368,32 @@ void shuffle(uint32_t* tab, uint32_t size) {
     free(shuffled);
 }
 
-uint32_t* sortEdgetab(uint32_t* tab, uint32_t tab_size, uint32_t* faulty_edges) {
+uint32_t* sortEdgetab(uint32_t* tab, uint32_t tab_size) {
     assert(tab != NULL && tab_size > 0);
-
-    uint32_t i, j;
+    uint32_t i, va, vb;
     for (i=0; i<tab_size/2; i++) {
-        j = 1;
-        while ((tab[0] == tab[j] ||
-                _edgeListeDoublon(tab[0], tab[j], tab, tab_size-2*i, 2*i)==1)
-               && j < tab_size-2*i) j++;
-        swapTab(tab, j, tab_size -2*i- 1);
-        swapTab(tab, 0, tab_size -2*(i+1));
-        if (j >= tab_size-2*i) {
-            *faulty_edges = tab_size/2-i;
-            return NULL;
-        }
+        va = rand() % (tab_size-2*i);
+        vb = rand() % (tab_size-2*i);
+        if (tab[va] == tab[vb] || _edgeListeDoublon(tab[va], tab[vb], tab, tab_size-2*i, 2*i)==1) return NULL;
+        swapTab(tab, vb, tab_size -2*i- 1);
+        swapTab(tab, va, tab_size -2*(i+1));
     }
-    *faulty_edges = 0;
     return tab;
 }
 
-uint32_t repeatedSortEdgetab(uint32_t* tab, uint32_t tab_size, uint32_t max_iter) {
+uint32_t* iterSortEdgetab(uint32_t* tab, uint32_t tab_size, uint32_t max_iter, uint32_t* nb_tries) {
     assert(tab != NULL && tab_size > 0);
 
     uint32_t i=0;
-    uint32_t faulty_edges;
-    uint32_t* res;
-    do {
-        res = sortEdgetab(tab, tab_size, &faulty_edges);
-        i++;
-    }
-    while (res==NULL && i<max_iter);
-    return i;
-}
-
-uint32_t iterSortEdgetab(uint32_t* tab, uint32_t tab_size, uint32_t max_iter) {
-    assert(tab != NULL && tab_size > 0);
-
-    uint32_t i=0;
-    uint32_t faulty_edges;
     uint32_t *res;
     do {
         shuffle(tab, tab_size);
-        res = sortEdgetab(tab, tab_size, &faulty_edges);
+        res = sortEdgetab(tab, tab_size);
         i++;
     }
     while (res==NULL && i<max_iter);
-    return i;
+    *nb_tries = i;
+    return res;
 }
 
 void printtab(uint32_t* tab, uint32_t tab_size) {
