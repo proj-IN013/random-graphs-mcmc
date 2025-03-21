@@ -33,8 +33,10 @@ struct _liste_adjacence {
  *       * areteExiste(li, va, vb) : renvoie 1 si l'arête existe, 0 sinon.
  *   - Chargement et génération :
  *       * listeLoad(fname) : Charge un graphe à partir d'un fichier.
+ *       * listeSave(li, fname) : Sauvegarde un graphe dans un fichier (seulement les arrètes)
  *       * tabEdges2Liste(nb_vrtx, tab, tab_size) : Convertit un tableau d'arêtes en liste d'adjacence.
  *       * erdosRenyi(n, m) : Génère un graphe aléatoire selon le modèle d'Erdős-Rényi.
+ *       * erdosRenyi2(n, m) : Génère un graphe aléatoire (non connexe) selon le modèle d'Erdős-Rényi.
  *   - Analyse :
  *       * listeDegDistrib(li) : Calcule et renvoie la distribution des degrés.
  *       * listeSaveDegDistrib(li) : Calcule et enregistre la distribution des degrés dans nom_plot.
@@ -51,8 +53,10 @@ void listeRemoveSingle(LiAdj* li, uint32_t va, uint32_t vb);
 void listeRemove(LiAdj* li, uint32_t va, uint32_t vb);
 uint8_t areteExiste(LiAdj* li, uint32_t va, uint32_t vb);
 LiAdj* listeLoad(char* fname);
+void listeSave(LiAdj* li, char* fname);
 LiAdj* tabEdges2Liste(uint32_t nb_vrtx, uint32_t* tab, uint32_t tab_size);
 LiAdj* erdosRenyi(uint32_t n, uint32_t m);
+LiAdj* erdosRenyi2(uint32_t n, uint32_t m);
 uint32_t* listeDegDistrib(LiAdj* li, uint32_t* tab_size);
 void listeSaveDegDistrib(LiAdj* li, char* nom_plot);
 void listePrintStats(LiAdj* li);
@@ -119,7 +123,5 @@ int _edgeListeDoublon(uint32_t a, uint32_t b, uint32_t* tab, uint32_t tab_start,
 void swap(LiAdj* li, uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint8_t do_test);
 
 int bernou(double prob);
-
-
 
 uint32_t compterTriangles(LiAdj* li);

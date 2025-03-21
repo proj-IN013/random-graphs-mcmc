@@ -94,9 +94,23 @@ uint8_t areteExiste(LiAdj* li, uint32_t va, uint32_t vb) {
 }
 
 LiAdj* listeLoad(char* fname) {
-    LiAdj* li = listeInit( countVrtx(fname) );
+    LiAdj* li = listeInit( countVrtx(fname)+1 );
     readFile(fname, &_edges_liste, li, 1);
     return li;
+}
+
+void listeSave(LiAdj* li, char* fname) {
+    FILE* fic = startLog(fname);
+    fprintf(fic, "%s, n = %d, m = %d\n", fname, li->nb_vrtx, li->nb_edges/2);
+    VrtxVoisin *currentvoiz;
+    for (uint32_t i=0; i < li->nb_vrtx; i++) {
+        currentvoiz = li->L[i];
+        while (currentvoiz != NULL && currentvoiz->id < i) {
+            fprintf(fic, "%d %d\n", i+1, currentvoiz->id+1);
+            currentvoiz = currentvoiz->next;
+        }
+    }
+    fclose(fic);
 }
 
 LiAdj* tabEdges2Liste(uint32_t nb_vrtx, uint32_t* tab, uint32_t tab_size) {
@@ -111,7 +125,7 @@ LiAdj* tabEdges2Liste(uint32_t nb_vrtx, uint32_t* tab, uint32_t tab_size) {
 }
 
 LiAdj* erdosRenyi(uint32_t n, uint32_t m) {
-    uint32_t unique_vrtx = 0, i = 1, max_attempts = 5;
+    uint32_t unique_vrtx = 0, i = 1, max_attempts = 100;
 
     while (i <= max_attempts) {
         //float densite = 200*m;
@@ -128,10 +142,27 @@ LiAdj* erdosRenyi(uint32_t n, uint32_t m) {
             listeAdd(li, va, vb);
         }
         if (unique_vrtx == n) return li;
+        printf("error %d\n", n - unique_vrtx);
         listeFree(li);
         i++;
     }
     return NULL;
+}
+
+LiAdj* erdosRenyi2(uint32_t n, uint32_t m) {
+    LiAdj* li = listeInit(n);
+
+    srand(time(NULL));
+    double prob = 2*m;
+    prob /= n*(n+1); //     m ÷ (2 parmi n)
+    printf("prob : %f\n", prob);
+
+    for (uint32_t va=0; va<n; va++) {
+        for (uint32_t vb=va +1; vb<n; vb++) {  // on liste toutes les paires de vrtx possibles, sans doublons, sans boucles : n(n-1)/2
+            if (bernou(prob) == 1) listeAdd(li, va, vb);
+        }
+    }
+    return li;
 }
 
 uint32_t* listeDegDistrib(LiAdj* li, uint32_t* tab_size) {
@@ -246,8 +277,6 @@ void vrtxVoisinsFree(VrtxVoisin* vrtx) {
 }
 
 uint32_t vrtxDeg(VrtxVoisin* vrtx) {
-    assert(vrtx);
-
     uint32_t i = 0;
     while (vrtx != NULL) {
         vrtx = vrtx->next;
@@ -372,11 +401,19 @@ uint32_t* sortEdgetab(uint32_t* tab, uint32_t tab_size) {
     assert(tab != NULL && tab_size > 0);
     uint32_t i, va, vb;
     for (i=0; i<tab_size/2; i++) {
-        va = rand() % (tab_size-2*i);
-        vb = rand() % (tab_size-2*i);
+        //printtab(tab, tab_size);
+        vb = rand()%(tab_size-2*i);
+        va = vb;
+        while (va == vb) {
+            va = rand()%(tab_size-2*i);
+        }
+        //printf("tab[%d] = %d \t tab[%d] = %d \t\n", va, tab[va], vb, tab[vb]);
         if (tab[va] == tab[vb] || _edgeListeDoublon(tab[va], tab[vb], tab, tab_size-2*i, 2*i)==1) return NULL;
         swapTab(tab, vb, tab_size -2*i- 1);
+        if (tab_size -2*i- 1 == va) va = vb;
         swapTab(tab, va, tab_size -2*(i+1));
+        //printtab(tab, tab_size);
+        //printf("\n");
     }
     return tab;
 }
@@ -390,6 +427,7 @@ uint32_t* iterSortEdgetab(uint32_t* tab, uint32_t tab_size, uint32_t max_iter, u
         shuffle(tab, tab_size);
         res = sortEdgetab(tab, tab_size);
         i++;
+        //printf("\n\n");
     }
     while (res==NULL && i<max_iter);
     *nb_tries = i;
@@ -514,14 +552,6 @@ int bernou(double prob) {
 }
 
 
-
-
-
-
-
-#include <stdint.h>
-#include <assert.h>
-
 uint32_t compterTriangles(LiAdj* li) {
     assert(li);
 
@@ -549,4 +579,3 @@ uint32_t compterTriangles(LiAdj* li) {
 
     return nb_triang;
 }
-

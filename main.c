@@ -1,7 +1,6 @@
 #include "graphes.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <assert.h>
 
 #define MAX_ITER 200000
 
@@ -47,6 +46,25 @@ void buildDD1() {
     half_edges = iterSortEdgetab(half_edges, half_edges_tab_size, MAX_ITER, &nbIter);
     if (half_edges == NULL) Pred();
     else Pgreen();
+    LiAdj *quoicoubeh = tabEdges2Liste(graph_size, half_edges, half_edges_tab_size);
+    free(half_edges);
+    free(config_mdl);
+    printf("\tnb essais %d\n", nbIter);Preset();
+    printf("vrtx = %d, edges = %d\n", quoicoubeh->nb_vrtx, quoicoubeh->nb_edges);
+
+}
+
+void buildErdr(uint32_t n, uint32_t m) {
+    printf("Construction de erdr...\n");
+    LiAdj* erdr = erdosRenyi(n, m);
+    uint32_t size_config_mdl, half_edges_tab_size, graph_size;
+    uint32_t* config_mdl = listeDegDistrib(erdr, &size_config_mdl);
+    uint32_t* half_edges = tabEdgesConfig(config_mdl, size_config_mdl, &half_edges_tab_size, &graph_size);
+    uint32_t nbIter;
+    half_edges = iterSortEdgetab(half_edges, half_edges_tab_size, MAX_ITER, &nbIter);
+    if (half_edges == NULL) Pred();
+    else Pgreen();
+    //listeRender(tabEdges2Liste(graph_size, half_edges, half_edges_tab_size), "test73", 1);
     free(half_edges);
     free(config_mdl);
     printf("\tnb essais %d\n", nbIter);Preset();
@@ -56,43 +74,19 @@ int main(void)
 {
     srand(time(NULL));
 
-    etoiles();
+    //etoiles();
+    //buildDD1();
 
-    LiAdj* li = listeInit(20);
-    listeAdd(li, 0, 1);
-    listeAdd(li, 1, 2);
-    listeAdd(li, 2, 0);
-
-    listeAdd(li, 3, 4);
-    listeAdd(li, 4, 5);
-    listeAdd(li, 5, 3);
-
-    listeAdd(li, 6, 7);
-    listeAdd(li, 7, 8);
-    listeAdd(li, 8, 6);
-
-    listeAdd(li, 9, 10);
-    listeAdd(li, 10, 11);
-    listeAdd(li, 11, 9);
-
-    listeAdd(li, 12, 13);
-    listeAdd(li, 13, 14);
-    listeAdd(li, 14, 12);
-
-    listeAdd(li, 15, 16);
-    listeAdd(li, 16, 17);
-    listeAdd(li, 17, 15);
-
-    listeAdd(li, 18, 19);
-    listeAdd(li, 19, 0);
-    listeAdd(li, 0, 18);
-
-
-    listePrint(li);
-    uint32_t nb_triangles = compterTriangles(li);
-    printf("Nombre de triangles dans le graphe : %" PRIu32 "\n", nb_triangles);
-
-    listeFree(li);
+//gLiAdj* erdr = erdosRenyi1(991, 1944);
+    LiAdj* erdr = erdosRenyi2(991, 1944);
+    listeSaveDegDistrib(erdr, "outputs/erdrDD1.txt");
+    listeSave(erdr, "outputs/SAVEDERDR.txt");
+    //LiAdj* li = listeLoad("data/test1.txt");
+    //listePrint(li);
+    //uint32_t nb_triangles = compterTriangles(li);
+    //printf("Nombre de triangles dans le graphe : %" PRIu32 "\n", nb_triangles);
+    //listeRender(li, "123456", 1);
+    //listeFree(li);
 
     return 0;
 }
