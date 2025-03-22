@@ -211,7 +211,7 @@ void listePrint(LiAdj* li) {
 
     printf("liste d'ajdacence : \n");
     for (uint32_t i=0; i<li->nb_vrtx; i++) {
-        printf("%d :\t", i +1);
+        printf("%d :\t", i);//+1
         vrtxVoisinsPrint(li->L[i]);
     }
     printf("\n");
@@ -230,7 +230,7 @@ void listeRender(LiAdj* li, char* graph_name, int do_open) {
         VrtxVoisin* voiz = li->L[i];
         while (voiz) {
             if (i < voiz->id) {
-                fprintf(fic, "    %d -- %d;\n", i+1, voiz->id+1);
+                fprintf(fic, "    %d -- %d;\n", i+1, voiz->id);//+1
             }
             voiz = voiz->next;
         }
@@ -287,18 +287,19 @@ uint32_t vrtxDeg(VrtxVoisin* vrtx) {
 
 uint8_t vrtxEstVoisin(VrtxVoisin* vrtx, uint32_t voiz) {
     assert(vrtx);
-    if (voiz == vrtx->id) return 0;
-    vrtx = vrtx->next;
     while (vrtx != NULL) {
-        if (voiz == vrtx->id) return 1;
+        if (voiz == vrtx->id) {
+            return 1;  
+        }
         vrtx = vrtx->next;
     }
-    return 0;
+    return 0;  
 }
+
 
 void vrtxVoisinsPrint(VrtxVoisin* vrtx) {
     while (vrtx != NULL) {
-        printf("%d ", vrtx->id +1);
+        printf("%d ", vrtx->id);//+1
         vrtx = vrtx->next;
     }
     printf("\n");
@@ -579,3 +580,41 @@ uint32_t compterTriangles(LiAdj* li) {
 
     return nb_triang;
 }
+
+
+void actualiserTriangle(LiAdj* li, uint32_t a, uint32_t b, uint32_t c, uint32_t d,uint32_t *nb_triangles){
+    assert(li != NULL);
+    VrtxVoisin* vA = li->L[a];
+    while (vA != NULL) {
+        uint32_t temp = vA->id;
+        //si temp est un voisin de c, ajouter un triangle (puisque lien entre a et c est nouveau)
+        if (vrtxEstVoisin(li->L[c], temp)) {
+            (*nb_triangles)++;
+            printf("voisin trouvé pour %d et %d\n",a,c);
+        }
+        //si temp est un voisin de b, supprimer un triangle
+        if (vrtxEstVoisin(li->L[b], temp)) {
+            (*nb_triangles)--;
+            printf("voisin trouvé pour %d et %d \n",a,b);
+        }
+        vA = vA->next;
+    }
+    // meme chose avec d
+    VrtxVoisin* vD = li->L[d];
+    while (vD != NULL) {
+        uint32_t temp = vD->id;
+        if (vrtxEstVoisin(li->L[c], temp)) {
+            (*nb_triangles)--;
+            printf("voisin trouvé pour %d et %d\n",d,c);
+        }
+        if (vrtxEstVoisin(li->L[b], temp)) {
+            (*nb_triangles)++;
+            printf("voisin trouvé pour %d et %d\n",d,b);
+        }
+
+        vD = vD->next;
+    }
+
+    return ;
+}
+

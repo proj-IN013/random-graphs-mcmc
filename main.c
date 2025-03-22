@@ -78,15 +78,50 @@ int main(void)
     //buildDD1();
 
 //gLiAdj* erdr = erdosRenyi1(991, 1944);
-    LiAdj* erdr = erdosRenyi2(991, 1944);
-    listeSaveDegDistrib(erdr, "outputs/erdrDD1.txt");
-    listeSave(erdr, "outputs/SAVEDERDR.txt");
+    //LiAdj* erdr = erdosRenyi2(991, 1944);
+    //listeSaveDegDistrib(erdr, "outputs/erdrDD1.txt");
+    //listeSave(erdr, "outputs/SAVEDERDR.txt");
     //LiAdj* li = listeLoad("data/test1.txt");
     //listePrint(li);
     //uint32_t nb_triangles = compterTriangles(li);
     //printf("Nombre de triangles dans le graphe : %" PRIu32 "\n", nb_triangles);
     //listeRender(li, "123456", 1);
     //listeFree(li);
+    
 
+   /**   TEST POUR ACTUALISER TRIANGLE
+    LiAdj* li = listeInit(8);  // Un graphe avec 8 sommets (0 à 7)
+
+ 
+    listeAdd(li, 0, 1);
+    listeAdd(li, 1, 2);
+    listeAdd(li, 2, 0); // Triangle 0-1-2
+
+
+
+    listeAdd(li, 3, 4);
+    listeAdd(li, 4, 5);
+    listeAdd(li, 5, 3); // Triangle 3-4-5
+
+    listeAdd(li, 6, 7);
+    listeAdd(li, 7, 0);
+    listeAdd(li, 0, 6); // Triangle 6-7-0
+
+  
+    printf("Graphes avec triangles (avant l'échange) :\n");
+    listePrint(li);
+
+    uint32_t nb_triangles = compterTriangles(li);
+    printf("Nombre initial de triangles : %" PRIu32 "\n", nb_triangles);
+
+    swap(li, 0, 1, 4, 5, 1);
+
+    printf("Graphes avec triangles (apres l'échange) :\n");
+    listePrint(li);
+    actualiserTriangle(li,0,1,4,5,&nb_triangles);
+    printf("Nombre de triangles après swap : %" PRIu32 "\n", nb_triangles);
+
+
+    listeFree(li);**/
     return 0;
 }
