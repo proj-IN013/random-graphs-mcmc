@@ -14,6 +14,8 @@ void meanBuildTime(FILE* plot, uint32_t* config_tab, uint32_t size_cfg_mdl, uint
         half_edges = iterSortEdgetab(half_edges, half_edges_tab_size, MAX_ITER, &step_tries);
         if (half_edges != NULL) {
             total_tries += (uint64_t)step_tries;
+            fprintf(plot, "%u\n", step_tries);
+
         } else samples--;
         free(half_edges);
     }
@@ -21,7 +23,6 @@ void meanBuildTime(FILE* plot, uint32_t* config_tab, uint32_t size_cfg_mdl, uint
     else Pred();
     double moy = (double)total_tries/samples;
     printf("\t%f\tsamples : %d\n", moy, samples);Preset();
-    fprintf(plot, "%.2f\n", moy);
 }
 
 void etoiles() {
@@ -37,7 +38,7 @@ void etoiles() {
     fclose(plot);
 }
 
-void buildDD1() {
+uint32_t buildfromdist(char* fname) {
     printf("Construction de dd1...\n");
     uint32_t size_config_mdl, half_edges_tab_size, graph_size;
     uint32_t* config_mdl = loadConfigModel("data/dd1.txt", &size_config_mdl);
@@ -51,7 +52,7 @@ void buildDD1() {
     free(config_mdl);
     printf("\tnb essais %d\n", nbIter);Preset();
     printf("vrtx = %d, edges = %d\n", quoicoubeh->nb_vrtx, quoicoubeh->nb_edges);
-
+    return nbIter;
 }
 
 void buildErdr(uint32_t n, uint32_t m) {
@@ -70,23 +71,20 @@ void buildErdr(uint32_t n, uint32_t m) {
     printf("\tnb essais %d\n", nbIter);Preset();
 }
 
+
+
 int main(void)
 {
     srand(time(NULL));
+    uint32_t size_cfg_mdl1, size_cfg_mdl2;
+    uint32_t* erdr = loadConfigModel("data/testerdr/erdrDD1.txt", &size_cfg_mdl1);
+    uint32_t* dd1  = loadConfigModel("data/dd1.txt", &size_cfg_mdl2);
 
-    //etoiles();
-    //buildDD1();
-
-//gLiAdj* erdr = erdosRenyi1(991, 1944);
-    LiAdj* erdr = erdosRenyi2(991, 1944);
-    listeSaveDegDistrib(erdr, "outputs/erdrDD1.txt");
-    listeSave(erdr, "outputs/SAVEDERDR.txt");
-    //LiAdj* li = listeLoad("data/test1.txt");
-    //listePrint(li);
-    //uint32_t nb_triangles = compterTriangles(li);
-    //printf("Nombre de triangles dans le graphe : %" PRIu32 "\n", nb_triangles);
-    //listeRender(li, "123456", 1);
-    //listeFree(li);
-
+    FILE *plot1 = startLog("outputs/res1.txt");
+    meanBuildTime(plot1, erdr, size_cfg_mdl1, 1000);
+    FILE *plot2 = startLog("outputs/res2.txt");
+    meanBuildTime(plot2, dd1 , size_cfg_mdl2, 1000);
+    fclose(plot1);
+    fclose(plot2);
     return 0;
 }
