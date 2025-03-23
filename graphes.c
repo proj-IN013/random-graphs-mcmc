@@ -287,8 +287,6 @@ uint32_t vrtxDeg(VrtxVoisin* vrtx) {
 
 uint8_t vrtxEstVoisin(VrtxVoisin* vrtx, uint32_t voiz) {
     assert(vrtx);
-    if (voiz == vrtx->id) return 0;
-    vrtx = vrtx->next;
     while (vrtx != NULL) {
         if (voiz == vrtx->id) return 1;
         vrtx = vrtx->next;
@@ -525,6 +523,8 @@ int _edgeListeDoublon(uint32_t a, uint32_t b, uint32_t* tab, uint32_t tab_start,
 }
 
 void swap(LiAdj* li, uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint8_t do_test) {
+    assert(li != NULL);
+    assert(li->L[a] && li->L[b] && li->L[c] && li->L[d]);
     if (do_test >= 1) {
         assert(areteExiste(li, a, c) == 0);
         assert(areteExiste(li, b, d) == 0);
@@ -566,7 +566,7 @@ uint32_t compterTriangles(LiAdj* li) {
                 while (vB != NULL) {
                     uint32_t c = vB->id;
                     if (c > b && c > a) {
-                        if (vrtxEstVoisin(li->L[a], c)) {
+                        if (areteExiste(li, a, c)) {
                             nb_triang++;
                         }
                     }
@@ -579,3 +579,35 @@ uint32_t compterTriangles(LiAdj* li) {
 
     return nb_triang;
 }
+
+void actualiserTriangle(LiAdj* li, uint32_t a, uint32_t b, uint32_t c, uint32_t d,uint32_t *nb_triangles){
+    assert(li != NULL);
+    assert(li->L[a] && li->L[b] && li->L[c] && li->L[d]);
+    printf("total = %d\n", *nb_triangles);
+    VrtxVoisin* temp = li->L[a];
+    while (temp != NULL) {
+        if (areteExiste(li, c, temp->id) == 1) {
+            (*nb_triangles)++;
+            printf("voisin +trouvé pour %d et %d : %d\n",a+1,c+1,temp->id+1);
+        }
+        if (areteExiste(li, b, temp->id) == 1) {
+            (*nb_triangles)--;
+            printf("voisin -trouvé pour %d et %d : %d\n",a+1,b+1,temp->id+1);
+        }
+        temp = temp->next;
+    }
+    temp = li->L[d];
+    while (temp != NULL) {
+        if (areteExiste(li, b, temp->id) == 1) {
+            (*nb_triangles)++;
+            printf("voisin +trouvé pour %d et %d : %d\n",d+1,b+1,temp->id+1);
+        }
+        if (areteExiste(li, c, temp->id) == 1) {
+            (*nb_triangles)--;
+            printf("voisin -trouvé pour %d et %d : %d\n",d+1,c+1,temp->id+1);
+        }
+        temp = temp->next;
+    }
+    printf("total = %d\n", *nb_triangles);
+}
+

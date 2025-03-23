@@ -23,6 +23,7 @@ void meanBuildTime(FILE* plot, uint32_t* config_tab, uint32_t size_cfg_mdl, uint
     else Pred();
     double moy = (double)total_tries/samples;
     printf("\t%f\tsamples : %d\n", moy, samples);Preset();
+    fprintf(plot, "%.2f\n", moy);
 }
 
 void etoiles() {
@@ -71,11 +72,49 @@ void buildErdr(uint32_t n, uint32_t m) {
     printf("\tnb essais %d\n", nbIter);Preset();
 }
 
-
-
 int main(void)
 {
     srand(time(NULL));
+
+    LiAdj* li = listeInit(8);  // Un graphe avec 8 sommets (0 à 7)
+
+
+    listeAdd(li, 0, 1);
+    listeAdd(li, 1, 2);
+    listeAdd(li, 2, 0); // Triangle 0-1-2
+
+
+
+    listeAdd(li, 3, 4);
+    listeAdd(li, 4, 5);
+    listeAdd(li, 5, 3); // Triangle 3-4-5
+
+    listeAdd(li, 6, 7);
+    listeAdd(li, 7, 0);
+    listeAdd(li, 0, 6); // Triangle 6-7-0
+
+
+    printf("Graphes avec triangles (avant l'échange) :\n");
+    listePrint(li);
+
+    uint32_t nb_triangles = compterTriangles(li);
+    printf("Nombre initial de triangles : %" PRIu32 "\n", nb_triangles);
+    actualiserTriangle(li,0,1,4,5,&nb_triangles);
+
+    swap(li, 0, 1, 4, 5, 1);
+
+    printf("Graphes avec triangles (apres l'échange) :\n");
+    listePrint(li);
+    printf("Nombre de triangles après swap : %" PRIu32 "\n", nb_triangles);
+
+
+    listeFree(li);
+
+    exit(EXIT_SUCCESS);
+
+
+
+
     uint32_t size_cfg_mdl1, size_cfg_mdl2;
     uint32_t* erdr = loadConfigModel("data/testerdr/erdrDD1.txt", &size_cfg_mdl1);
     uint32_t* dd1  = loadConfigModel("data/dd1.txt", &size_cfg_mdl2);

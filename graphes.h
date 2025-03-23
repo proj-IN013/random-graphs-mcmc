@@ -125,3 +125,4 @@ void swap(LiAdj* li, uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint8_t do_
 int bernou(double prob);
 
 uint32_t compterTriangles(LiAdj* li);
+void actualiserTriangle(LiAdj* li, uint32_t a, uint32_t b, uint32_t c, uint32_t d,uint32_t *nb_triangles);
