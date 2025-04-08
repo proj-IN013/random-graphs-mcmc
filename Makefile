@@ -1,15 +1,18 @@
-CFLAGS = -Wall -Wextra -Werror -Wno-unused-parameter -fsanitize=address
+CFLAGS = -Wall -Wextra -Werror -Wno-unused-parameter #-fsanitize=address #-Wno-unused-variable
 CC = gcc
 
 PROGRAM = test_graphes
 
 all: $(PROGRAM)
 
-$(PROGRAM): main.o graphes.o Pcolors.o
-	$(CC) -o $(PROGRAM) $(CFLAGS) main.o graphes.o Pcolors.o
+$(PROGRAM): main.o analyse.o graphes.o Pcolors.o
+	$(CC) -o $(PROGRAM) $(CFLAGS) main.o analyse.o graphes.o Pcolors.o
 
-main.o: main.c graphes.h Pcolors.h
+main.o: main.c analyse.h graphes.h Pcolors.h
 	$(CC) $(CFLAGS) -c main.c
+
+analyse.o: analyse.c analyse.h
+	$(CC) $(CFLAGS) -c analyse.c
 
 graphes.o: graphes.c graphes.h
 	$(CC) $(CFLAGS) -c graphes.c

@@ -1,4 +1,6 @@
 import matplotlib.pyplot as plt
+import matplotlib
+from glob import glob
 import numpy as np
 
 def read_data_from_file(file_name):
@@ -22,21 +24,33 @@ def read_1b_data_from_file(file_name):
             if len(values) == 1:
                 x.append(float(values[0]))
     return x
+_, Y1, Y2 = read_data_from_file("outputs/caida.txt")
+#Y2 = read_1b_data_from_file("outputs/dd1_erdr_hist.txt")
 
-def unif(listetriee, rayon, x):
-    return ( (listetriee >= x-rayon) & (listetriee <= x+rayon)).sum()/(2*rayon)
-
-
-Y1 = read_1b_data_from_file("outputs/res1 copie.txt");
-Y2 = read_1b_data_from_file("outputs/res2 copie.txt");
-
-x  = np.arange(0, np.max(Y1+ Y2), 1)
 y1 = np.array(Y1)
 y2 = np.array(Y2)
-np.sort(y1)
-np.sort(y2)
-plt.plot(x, np.array([unif(y1, 100, xi) for xi in x]) , label='erdr', color='b', alpha=0.7)
-plt.plot(x, np.array([unif(y2, 100, xi) for xi in x]) , label='dd1', color='r', alpha=0.7)
+
+names = glob("outputs/threads/*.txt")
+
+x = np.arange(0, 51, 1)
+
+
+plt.yscale("log")
+for i in range(len(names)):
+    y =  read_1b_data_from_file(names[i])
+    plt.plot(x*5000, y, alpha=1/len(x), color="blue")
+
+
+#plt.hist(y1, bins=20, density = True, edgecolor="white",alpha=0.7)
+#plt.hist(y2, bins=20, density = True, edgecolor="white",alpha=0.7)
+
+#plt.figure(figsize=(6,5))
+#plt.violinplot([y2, y1], showmedians=True)
+#plt.xticks([1, 2], ["Degré homogène", "Degré hétérogène"])
+#plt.ylabel("Nombre d'essais")
+#plt.title("Distribution des 1000 essais")
+
+#plt.plot(y1, y2);
 
 #file_name = 'outputs/50etoile.txt'
 #x, y1, y2 = read_data_from_file(file_name)

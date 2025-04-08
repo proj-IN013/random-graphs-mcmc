@@ -18,7 +18,7 @@ LiAdj* listeInit(uint32_t nb_vrtx) {
     return liste;
 }
 
-void listeFree(LiAdj* li) {
+void freeList(LiAdj* li) {
     if (li == NULL) return;
 
     for (uint32_t i=0;i < li->nb_vrtx;i++) {
@@ -113,6 +113,27 @@ void listeSave(LiAdj* li, char* fname) {
     fclose(fic);
 }
 
+
+LiAdj* dupList(LiAdj* li) {
+    if (!li) return NULL;
+
+    LiAdj* copy = malloc(sizeof(LiAdj));
+    assert(copy != NULL);
+
+    copy->nb_vrtx = li->nb_vrtx;
+    copy->nb_edges = li->nb_edges;
+
+    copy->L = malloc(copy->nb_vrtx * sizeof(VrtxVoisin*));
+    assert(copy->L != NULL);
+
+    for (uint32_t i = 0; i < copy->nb_vrtx; i++) {
+        copy->L[i] = dupVrtxVoisins(li->L[i]);
+    }
+
+    return copy;
+}
+
+
 LiAdj* tabEdges2Liste(uint32_t nb_vrtx, uint32_t* tab, uint32_t tab_size) {
     assert(tab != NULL && nb_vrtx > 0);
 
@@ -120,8 +141,18 @@ LiAdj* tabEdges2Liste(uint32_t nb_vrtx, uint32_t* tab, uint32_t tab_size) {
     for (uint32_t i=0; i<tab_size/2; i++) {
         listeAdd(li, tab[2*i], tab[2*i+1]);
     }
-
     return li;
+}
+
+LiAdj* genListFromCfgMdl(char *fname) {
+    uint32_t size_cfg_mdl, half_edges_tab_size, graph_size, tries;
+
+    uint32_t* cfg_mdl = loadConfigModel(fname, &size_cfg_mdl);
+    uint32_t* half_edges = genHalfEdgesTab(cfg_mdl, size_cfg_mdl, &half_edges_tab_size, &graph_size);
+    half_edges = iterSortHalfEdgesTab(half_edges, half_edges_tab_size, MAX_ITER, &tries);
+
+    if (half_edges == NULL) return NULL;
+    return tabEdges2Liste(graph_size, half_edges, half_edges_tab_size);
 }
 
 LiAdj* erdosRenyi(uint32_t n, uint32_t m) {
@@ -143,7 +174,7 @@ LiAdj* erdosRenyi(uint32_t n, uint32_t m) {
         }
         if (unique_vrtx == n) return li;
         printf("error %d\n", n - unique_vrtx);
-        listeFree(li);
+        freeList(li);
         i++;
     }
     return NULL;
@@ -276,6 +307,18 @@ void vrtxVoisinsFree(VrtxVoisin* vrtx) {
     }
 }
 
+VrtxVoisin* dupVrtxVoisins(VrtxVoisin* vrtx) {
+    if (!vrtx) return NULL;
+
+    VrtxVoisin* copy = malloc(sizeof(VrtxVoisin));
+    assert(copy != NULL);
+
+    copy->id = vrtx->id;
+    copy->next = dupVrtxVoisins(vrtx->next);
+
+    return copy;
+}
+
 uint32_t vrtxDeg(VrtxVoisin* vrtx) {
     uint32_t i = 0;
     while (vrtx != NULL) {
@@ -325,7 +368,7 @@ uint32_t countVrtx(char* fname) {
     LiAdj* li = listeInit(1); // on utilise une liste d'adjacence de taille 1:N pour compter les voisins
     readFile(fname, &_unique_vrtx_liste, li, 1);
     uint32_t nb = li->nb_edges;
-    listeFree(li);
+    freeList(li);
     return nb;
 }
 
@@ -379,51 +422,55 @@ void swapTab(uint32_t* tab, uint32_t i, uint32_t k) {
     tab[k] = tmp;
 }
 
-void shuffle(uint32_t* tab, uint32_t size) {
+uint32_t* shuffle(uint32_t* tab, uint32_t size) {
+    assert(tab && size);
     uint32_t* shuffled = (uint32_t*)malloc(size * sizeof(uint32_t));
     assert(shuffled);
-    assert(tab);
     uint32_t i, k;
 
     for (i=0;i<size;i++) shuffled[i] = UINT32_MAX;
-    k = rand() % size;
+    k = random() % size;
     for (i=0;i<size;i++) {
-        while (shuffled[k] != UINT32_MAX) k = rand() % size;
+        while (shuffled[k] != UINT32_MAX) k = random() % size;
         shuffled[k] = tab[i];
     }
-    for (i=0;i<size;i++) tab[i] = shuffled[i];
-    free(shuffled);
+    free(tab);
+    return shuffled;
 }
 
-uint32_t* sortEdgetab(uint32_t* tab, uint32_t tab_size) {
+uint32_t* sortHalfEdgesTab(uint32_t* tab, uint32_t tab_size) {
     assert(tab != NULL && tab_size > 0);
-    uint32_t i, va, vb;
+    uint32_t i, va, vb, new_va, new_vb;
+    //uint32_t t[16]; for (uint32_t j=0;j<16; j++) {t[j]=j;}
+    //Pyellow();printtab(t, 16);Preset();
     for (i=0; i<tab_size/2; i++) {
         //printtab(tab, tab_size);
-        vb = rand()%(tab_size-2*i);
-        va = vb;
-        while (va == vb) {
-            va = rand()%(tab_size-2*i);
-        }
-        //printf("tab[%d] = %d \t tab[%d] = %d \t\n", va, tab[va], vb, tab[vb]);
-        if (tab[va] == tab[vb] || _edgeListeDoublon(tab[va], tab[vb], tab, tab_size-2*i, 2*i)==1) return NULL;
-        swapTab(tab, vb, tab_size -2*i- 1);
-        if (tab_size -2*i- 1 == va) va = vb;
-        swapTab(tab, va, tab_size -2*(i+1));
+        new_vb = tab_size -2*i -1;
+        new_va = tab_size -2*i -2;
+        vb = rand()%(tab_size -2*i);
+        //Pwhite();printf("on échange   tab[%d] = %d   avec   tab[%d] = %d\n", vb, tab[vb], new_vb, tab[new_vb]);Preset();
+        swapTab(tab, vb, new_vb);
         //printtab(tab, tab_size);
-        //printf("\n");
+        va = rand()%(tab_size -2*i);
+        //Pwhite();printf("on échange   tab[%d] = %d   avec   tab[%d] = %d\n", vb, tab[vb], new_vb, tab[new_vb]);Preset();
+        swapTab(tab, va, new_va);
+        //printtab(tab, tab_size);
+
+        if (tab[new_va] == tab[new_vb]) return NULL;//{Pred();printf("boucle\n\n\n\n");Preset();return NULL;}
+        if (_halfEdgesListeDoublon(tab[new_va], tab[new_vb], tab, tab_size-2*i, 2*i)==1) return NULL;//{Pred();printf("multi lien\n\n\n");Preset();return NULL;}
+        //printf("\n\n");
     }
     return tab;
 }
 
-uint32_t* iterSortEdgetab(uint32_t* tab, uint32_t tab_size, uint32_t max_iter, uint32_t* nb_tries) {
+uint32_t* iterSortHalfEdgesTab(uint32_t* tab, uint32_t tab_size, uint32_t max_iter, uint32_t* nb_tries) {
     assert(tab != NULL && tab_size > 0);
 
     uint32_t i=0;
     uint32_t *res;
     do {
-        shuffle(tab, tab_size);
-        res = sortEdgetab(tab, tab_size);
+        tab = shuffle(tab, tab_size);
+        res = sortHalfEdgesTab(tab, tab_size);
         i++;
         //printf("\n\n");
     }
@@ -446,7 +493,7 @@ uint32_t* duptab(uint32_t* tab, uint32_t tab_size) {
     assert(tab && tab_size);
 
     uint32_t* newtab = (uint32_t*)malloc(sizeof(uint32_t)*tab_size);
-    for (uint32_t i=0; i<tab_size-1; i++) {
+    for (uint32_t i=0; i<tab_size; i++) {
         newtab[i] = tab[i];
     }
     return newtab;
@@ -475,7 +522,7 @@ uint32_t* tabCountsOcc(uint32_t* degs, uint32_t size_degs, uint32_t* size_occ) {
     return occ;
 }
 
-uint32_t* tabEdgesConfig(uint32_t* occ, uint32_t size_occ, uint32_t* edges_size, uint32_t* graph_size) {
+uint32_t* genHalfEdgesTab(uint32_t* occ, uint32_t size_occ, uint32_t* half_edges_tab_size, uint32_t* graph_size) {
     assert(occ && size_occ != 0);
 
     uint32_t nb_half_edges = 0;
@@ -498,13 +545,13 @@ uint32_t* tabEdgesConfig(uint32_t* occ, uint32_t size_occ, uint32_t* edges_size,
             vrtx_id++;
         }
     }
-    shuffle(edges, nb_half_edges);
-    *edges_size = nb_half_edges;
+    edges = shuffle(edges, nb_half_edges);
+    *half_edges_tab_size = nb_half_edges;
     *graph_size = nb_vrtx;
     return edges;
 }
 
-int _edgeListeDoublon(uint32_t a, uint32_t b, uint32_t* tab, uint32_t tab_start, uint32_t tab_size) {
+int _halfEdgesListeDoublon(uint32_t a, uint32_t b, uint32_t* tab, uint32_t tab_start, uint32_t tab_size) {
     assert(tab != NULL && tab_size >= 0);
 
     if (tab_size == 0) return 0;
@@ -522,26 +569,20 @@ int _edgeListeDoublon(uint32_t a, uint32_t b, uint32_t* tab, uint32_t tab_start,
     return 0;
 }
 
-void swap(LiAdj* li, uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint8_t do_test) {
+int swap(LiAdj* li, uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint8_t do_test) {
     assert(li != NULL);
     assert(li->L[a] && li->L[b] && li->L[c] && li->L[d]);
-    if (do_test >= 1) {
-        assert(areteExiste(li, a, c) == 0);
-        assert(areteExiste(li, b, d) == 0);
-        if (do_test == 2) {
-            assert(a != b && a != c && a != d && b != c && b != d && c!= d);
-            assert(areteExiste(li, a, b) == 1);
-            assert(areteExiste(li, c, d) == 1);
-        }
-    }
+    if (do_test >= 1 && (areteExiste(li, a, c) != 0 || areteExiste(li, b, d) != 0)) return 0;
+    if (do_test == 2 && (!(a != b && a != c && a != d && b != c && b != d && c!= d)
+                     || areteExiste(li, a, b) != 1
+                     || areteExiste(li, c, d) != 1 )) return 0;
 
     listeRemove(li, a, b);
     listeRemove(li, c, d);
-
     listeAdd(li, a, c);
     listeAdd(li, b, d);
+    return 1;
 }
-
 
 int bernou(double prob) {
     assert(prob <= 1 && prob >= 0);
@@ -550,64 +591,3 @@ int bernou(double prob) {
     if (randFl <= prob) return 1;
     else return 0;
 }
-
-
-uint32_t compterTriangles(LiAdj* li) {
-    assert(li);
-
-    uint32_t nb_triang = 0;
-    for (uint32_t a = 0; a < li->nb_vrtx; a++) {
-        VrtxVoisin* vA = li->L[a];
-        while (vA != NULL) {
-            uint32_t b = vA->id;
-            // pas faire doublons
-            if (b > a) {
-                VrtxVoisin* vB = li->L[b];
-                while (vB != NULL) {
-                    uint32_t c = vB->id;
-                    if (c > b && c > a) {
-                        if (areteExiste(li, a, c)) {
-                            nb_triang++;
-                        }
-                    }
-                    vB = vB->next;
-                }
-            }
-            vA = vA->next;
-        }
-    }
-
-    return nb_triang;
-}
-
-void actualiserTriangle(LiAdj* li, uint32_t a, uint32_t b, uint32_t c, uint32_t d,uint32_t *nb_triangles){
-    assert(li != NULL);
-    assert(li->L[a] && li->L[b] && li->L[c] && li->L[d]);
-    printf("total = %d\n", *nb_triangles);
-    VrtxVoisin* temp = li->L[a];
-    while (temp != NULL) {
-        if (areteExiste(li, c, temp->id) == 1) {
-            (*nb_triangles)++;
-            printf("voisin +trouvé pour %d et %d : %d\n",a+1,c+1,temp->id+1);
-        }
-        if (areteExiste(li, b, temp->id) == 1) {
-            (*nb_triangles)--;
-            printf("voisin -trouvé pour %d et %d : %d\n",a+1,b+1,temp->id+1);
-        }
-        temp = temp->next;
-    }
-    temp = li->L[d];
-    while (temp != NULL) {
-        if (areteExiste(li, b, temp->id) == 1) {
-            (*nb_triangles)++;
-            printf("voisin +trouvé pour %d et %d : %d\n",d+1,b+1,temp->id+1);
-        }
-        if (areteExiste(li, c, temp->id) == 1) {
-            (*nb_triangles)--;
-            printf("voisin -trouvé pour %d et %d : %d\n",d+1,c+1,temp->id+1);
-        }
-        temp = temp->next;
-    }
-    printf("total = %d\n", *nb_triangles);
-}
-
