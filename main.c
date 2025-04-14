@@ -31,9 +31,9 @@ void meanBuildTime(FILE* plot, uint32_t* config_tab, uint32_t size_cfg_mdl, uint
 int main(void)
 {
     srand(time(NULL));
-    Graph *Gr = initGraph(listeLoad("data/arenas-pgp/out.arenas-pgp"));
+    //Graph *Gr = initGraph(listeLoad("data/arenas-pgp/out.arenas-pgp"));
     //Graph *Gr = initGraph(listeLoad("data/arenas-jazz/out.arenas-jazz"));
-    //Graph *Gr = initGraph(listeLoad("data/as-caida20071105/out.as-caida20071105"));
+    Graph *Gr = initGraph(listeLoad("data/as-caida20071105/out.as-caida20071105"));
     //Graph *Gr = initGraph(genListFromCfgMdl("data/dd1.txt"));
 
     initThreadList(Gr, updateTriangles);

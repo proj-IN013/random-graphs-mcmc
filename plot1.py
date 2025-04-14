@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import matplotlib
 from glob import glob
 import numpy as np
+import h5py
 
 def read_data_from_file(file_name):
     x = []
@@ -27,18 +28,28 @@ def read_1b_data_from_file(file_name):
 _, Y1, Y2 = read_data_from_file("outputs/caida.txt")
 #Y2 = read_1b_data_from_file("outputs/dd1_erdr_hist.txt")
 
+def display_measure_MC(file_name):
+    #plt.yscale("log")
+    with h5py.File(file_name, "r") as file:
+        file_data = file["markovchains"]
+        chains = file_data[:]
+        sampling_gap = int(file_data.attrs['sampling_gap'])
+        stationary_state = int(file_data.attrs['stationary_state'])
+
+        x_range = np.arange(0, chains.shape[1], 1)
+        for x in range(chains.shape[1]-1):
+            if x*sampling_gap > stationary_state and stationary_state != -1:
+                plt.axvspan(x*sampling_gap, (x+1)*sampling_gap, color="red", alpha=(1+x%2)*0.05)
+            else:
+                plt.axvspan(x*sampling_gap, (x+1)*sampling_gap, color="slategrey", alpha=(1+x%2)*0.05)
+        for chain_val in chains:
+            plt.plot(x_range*sampling_gap, chain_val, alpha=10/chains.shape[0], color="forestgreen")
+
 y1 = np.array(Y1)
 y2 = np.array(Y2)
 
-names = glob("outputs/threads/*.txt")
+display_measure_MC("outputs/markov_chains/caida.hdf5")
 
-x = np.arange(0, 51, 1)
-
-
-plt.yscale("log")
-for i in range(len(names)):
-    y =  read_1b_data_from_file(names[i])
-    plt.plot(x*5000, y, alpha=1/len(x), color="blue")
 
 
 #plt.hist(y1, bins=20, density = True, edgecolor="white",alpha=0.7)
