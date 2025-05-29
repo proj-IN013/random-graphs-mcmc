@@ -158,9 +158,13 @@ void swapAndUpdate(Graph *Gr, void (*update)(Graph *Gr, uint32_t a, uint32_t b, 
     edgeAB = getRandomEdge(Gr, &a, &b);
     edgeCD = getRandomEdge(Gr, &c, &d);
 
-    if (swap(Gr->liAdj, a, b, c, d, 2) == 1) {
+    if (swap(Gr->liAdj, a, b, c, d, 2) == 0) {
         update(Gr, a, b, c, d);
         swapTab(Gr->edge_list, edgeAB + 1, edgeCD);
+        Gr->swaps++;
+    } else if (swap(Gr->liAdj, a, b, d, c, 2) == 0) {
+        update(Gr, a, b, d, c);
+        swapTab(Gr->edge_list, edgeAB + 1, edgeCD + 1);
         Gr->swaps++;
     }
     //Pred();printf("SWAP");Preset();printf(" : %d %d %d\n", Gr->triangles, Gr->swap_attempts, Gr->swaps);

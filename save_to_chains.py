@@ -14,7 +14,7 @@ files = glob(args.input_path + "*.txt")
 chains = []
 for i in range(len(files)):
     chain = []
-    with open(files[i], 'r') as file:p
+    with open(files[i], 'r') as file:
         for i, line in enumerate(file):
             val = line.split()
             if len(val) == 1:

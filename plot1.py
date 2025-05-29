@@ -48,7 +48,7 @@ def display_measure_MC(file_name):
 y1 = np.array(Y1)
 y2 = np.array(Y2)
 
-display_measure_MC("outputs/markov_chains/caida.hdf5")
+display_measure_MC("outputs/markov_chains/jazzHauteRes.hdf5")
 
 
 

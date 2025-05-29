@@ -572,16 +572,35 @@ int _halfEdgesListeDoublon(uint32_t a, uint32_t b, uint32_t* tab, uint32_t tab_s
 int swap(LiAdj* li, uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint8_t do_test) {
     assert(li != NULL);
     assert(li->L[a] && li->L[b] && li->L[c] && li->L[d]);
-    if (do_test >= 1 && (areteExiste(li, a, c) != 0 || areteExiste(li, b, d) != 0)) return 0;
+    if (do_test >= 1 && (areteExiste(li, a, c) != 0 || areteExiste(li, b, d) != 0)) return -1;
     if (do_test == 2 && (!(a != b && a != c && a != d && b != c && b != d && c!= d)
                      || areteExiste(li, a, b) != 1
-                     || areteExiste(li, c, d) != 1 )) return 0;
+                     || areteExiste(li, c, d) != 1 )) return -2;
 
     listeRemove(li, a, b);
     listeRemove(li, c, d);
     listeAdd(li, a, c);
     listeAdd(li, b, d);
-    return 1;
+    return 0;
+}
+
+
+/// MAUVAIS FICHIER, FONCITON À CODER DANS ANALYSE.C POUR POUVOIR UTILISER getRandomEdge();
+/// mais t'as capté l'idée
+int randomkswap(LiAdj* li) {
+    // k choisi au hasard
+    // k arêtes (u1,v1), (u2,v2), ..., (un,vn) tirées uniformément
+    // puis mises dans une liste list2kVrtx = [u1,u2,...,un-1,un,v1,v2,...,vn-1,vn]
+    // on appelle kswap(li, list2kVrtx, k);
+}
+
+int kswap(LiAdj* li, uint32_t* list2kVrtx, uint32_t k) {
+    asert(li != NULL && list2kVrtx != NULL && k > 1);
+    uint32_t *k_perm = shuffle(list2kVrtx+k, k);
+
+    for (uint32_t i=0; i<k; i++) {
+        if (areteExiste(li, list2kVrtx[i], k_perm[i]) != 0) return -1;
+    }
 }
 
 int bernou(double prob) {

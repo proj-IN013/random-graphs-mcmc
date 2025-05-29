@@ -5,8 +5,8 @@
 #include <pthread.h>
 
 #define NB_THREADS 100
-#define SAMPLING_GAP 18000
-#define MAX_STEPS 500000
+#define SAMPLING_GAP 20
+#define MAX_STEPS 20000
 
 typedef struct _graph Graph;
 struct _graph {
