@@ -36,7 +36,7 @@ int listeAddSingle(LiAdj* li, uint32_t vrtx, uint32_t vzn_id) {
 
     if (li->L[vrtx] == NULL || li->L[vrtx]->id > vzn_id) {
         li->L[vrtx] = vrtxVoisinInit(vzn_id, li->L[vrtx]);
-        li->nb_edges += 1;
+        li->nb_edges++;
         return 0;
     }
 
@@ -49,7 +49,7 @@ int listeAddSingle(LiAdj* li, uint32_t vrtx, uint32_t vzn_id) {
 
     VrtxVoisin* new = vrtxVoisinInit(vzn_id, voisin->next);
     voisin->next = new;
-    li->nb_edges += 1;
+    li->nb_edges++;
     return 0;
 }
 
@@ -60,6 +60,7 @@ void listeAdd(LiAdj* li, uint32_t va, uint32_t vb) {
 
 void listeRemoveSingle(LiAdj* li, uint32_t va, uint32_t vb) {
     VrtxVoisin* tmp = li->L[va];
+    assert(tmp != NULL);
     if (tmp->id == vb) {
         li->L[va] = tmp->next;
         free(tmp);
@@ -86,8 +87,8 @@ void listeRemove(LiAdj* li, uint32_t va, uint32_t vb) {
 uint8_t areteExiste(LiAdj* li, uint32_t va, uint32_t vb) {
     assert(li);
     assert(va < li->nb_vrtx && vb < li->nb_vrtx);
-    int a = vrtxEstVoisin(li->L[va], vb);
-    int b = vrtxEstVoisin(li->L[vb], va);
+    int a = (li->L[va] != NULL) ? vrtxEstVoisin(li->L[va], vb) : 0;
+    int b = (li->L[vb] != NULL) ? vrtxEstVoisin(li->L[vb], va) : 0;
     if (a==1 && b==1) return 1;
     if (a==1 || b==1) exit(EXIT_FAILURE);
     return 0;
@@ -585,23 +586,44 @@ int swap(LiAdj* li, uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint8_t do_t
 }
 
 
-/// MAUVAIS FICHIER, FONCITON À CODER DANS ANALYSE.C POUR POUVOIR UTILISER getRandomEdge();
-/// mais t'as capté l'idée
-int randomkswap(LiAdj* li) {
-    // k choisi au hasard
-    // k arêtes (u1,v1), (u2,v2), ..., (un,vn) tirées uniformément
-    // puis mises dans une liste list2kVrtx = [u1,u2,...,un-1,un,v1,v2,...,vn-1,vn]
-    // on appelle kswap(li, list2kVrtx, k);
+int kswap(LiAdj* li, uint32_t* liste_vrtx, uint32_t* perm_liste_vrtx, uint32_t k) {
+    assert(li && liste_vrtx && k > 1);
+    // melanger les v1 .. vk
+    
+    // supprimer les anciennes arêtes (ui, vi)
+    for (uint32_t i = 0; i < k; i++) {
+        listeRemove(li, liste_vrtx[i], liste_vrtx[k + i]);
+    }
+    // verif boucle multilien
+    for (uint32_t i = 0; i < k; i++) {
+        uint32_t u = liste_vrtx[i];
+        uint32_t v = perm_liste_vrtx[i];
+        if (u == v || areteExiste(li, u, v)) {
+            printf("%d, %d\n", u == v, areteExiste(li, u, v) == 1 ? 12 : 8);
+            for (uint32_t j = 0; j < i; j++) {
+                listeRemove(li, liste_vrtx[j], perm_liste_vrtx[j]);
+            }
+            for (uint32_t i = 0; i < k; i++) {
+                listeAdd(li, liste_vrtx[i], liste_vrtx[k + i]);
+            }
+            return -1;
+        }
+        listeAdd(li, u, v);
+    }
+
+    return 0;
 }
 
-int kswap(LiAdj* li, uint32_t* list2kVrtx, uint32_t k) {
-    asert(li != NULL && list2kVrtx != NULL && k > 1);
-    uint32_t *k_perm = shuffle(list2kVrtx+k, k);
 
-    for (uint32_t i=0; i<k; i++) {
-        if (areteExiste(li, list2kVrtx[i], k_perm[i]) != 0) return -1;
+void rollback_kswap(LiAdj* li, uint32_t* liste_vrtx, uint32_t* perm_liste_vrtx, uint32_t k) {
+    for (uint32_t i = 0; i < k; i++) {
+        listeRemove(li, liste_vrtx[i], perm_liste_vrtx[i]);
+    }
+    for (uint32_t i = 0; i < k; i++) {
+        listeAdd(li, liste_vrtx[i], liste_vrtx[k + i]);
     }
 }
+
 
 int bernou(double prob) {
     assert(prob <= 1 && prob >= 0);
@@ -609,4 +631,44 @@ int bernou(double prob) {
     randFl /= RAND_MAX;
     if (randFl <= prob) return 1;
     else return 0;
+}
+
+double tirage_zipf(uint32_t k_max, double s) {
+    assert(k_max > 1 && s > 0.0);
+
+    // tirage de k selon Zipf(1..k_max)
+    double H = 0.0;
+    for (uint32_t i = 1; i <= k_max; i++) {
+        H += 1.0 / pow((double)i, s);
+    }
+    double r = ((double)rand() / RAND_MAX) * H;
+    double sum = 0.0;
+    uint32_t k = 1;
+    for (; k < k_max; k++) {
+        sum += 1.0 / pow((double)k, s);
+        if (sum >= r) break;
+    }
+    return k;
+}
+
+
+uint32_t* tirage_entiers_distincts(uint32_t k, uint32_t max) {
+    assert(k <= max);
+
+    uint32_t *out = malloc(k * sizeof(uint32_t));
+    uint32_t *indices = malloc(max * sizeof(uint32_t));
+    for (uint32_t i = 0; i < max; i++) {
+        indices[i] = i;
+    }
+
+    for (uint32_t i = 0; i < k; i++) {
+        uint32_t j = i + rand() % (max - i);  // tirage entre i et max - 1
+        uint32_t tmp = indices[i];
+        indices[i] = indices[j];
+        indices[j] = tmp;
+        out[i] = indices[i];
+        if (out[i] >= max) Pred();
+    }
+    free(indices);
+    return out;
 }

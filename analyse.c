@@ -1,6 +1,5 @@
 #include "analyse.h"
 
-
 Graph *initGraph(LiAdj *liAdj)
 {
     assert(liAdj);
@@ -172,6 +171,59 @@ void swapAndUpdate(Graph *Gr, void (*update)(Graph *Gr, uint32_t a, uint32_t b, 
 }
 
 
+int kswapAndUpdate(Graph *Gr) {
+    uint32_t k = 2;//tirage_zipf(Gr->liAdj->nb_edges/2 -1, .01) + 1;
+    //printf("k = %d\n", k);
+
+    uint32_t *liste_vrtx = malloc(2 * k * sizeof(uint32_t));
+    uint32_t *indices = tirage_entiers_distincts(k, Gr->liAdj->nb_edges/2);
+    assert(liste_vrtx != NULL && indices != NULL);
+    for (uint32_t i = 0; i < k; i++) {
+        //if (2*indices[i]+1 >= 5848) {printf("WWAAAAAZAAA\n");}
+        //printf("%d %d\n", 2*indices[i]+1, Gr->liAdj->nb_edges);
+        //printf("%d\n", 2*indices[i]+1);
+        liste_vrtx[i] = Gr->edge_list[2*indices[i]];
+        liste_vrtx[k + i] = Gr->edge_list[2*indices[i]+1];
+    }
+
+    uint32_t *perm = malloc(k * sizeof(uint32_t));
+    assert(perm);
+    //printtab(liste_vrtx, 2*k);
+    genPerm(perm, liste_vrtx, k);
+    //printtab(perm, k);
+
+    int res = kswap(Gr->liAdj, liste_vrtx, perm, k);
+    //int delta = 0;
+    printf("%d\n", res);
+    exit(EXIT_SUCCESS);
+
+    if (res == 0) {
+        //delta = Gr->triangles;
+        //int preswap = Gr->triangles;
+        //countTriangles(Gr);
+        //int postswap = Gr->triangles;
+        //delta = postswap - 44;
+
+        if (1<= 2) {
+            for (uint32_t i = 0; i<k; i++) {
+                Gr->edge_list[2*indices[i]+1] = perm[i];
+            }
+            //printf("\tk : %d\ttriangles : %d\tdelta : %d\ttotal : %d\n", k, Gr->triangles, delta, Gr->triangles+delta);
+
+            //printf("\t\t\t\ttotal : %d\n", Gr->triangles);
+        } else {
+            rollback_kswap(Gr->liAdj, liste_vrtx, perm, k);
+            //Gr->triangles = preswap;
+        }
+    }
+
+    free(perm);
+    free(liste_vrtx);
+    free(indices);
+    return res;//(res == 0 && 1 <= 2) ? 0 : -1;
+}
+
+
 Thread *initThreadList(Graph *Gr, void (*updateMeasure)(Graph *Gr, uint32_t a, uint32_t b, uint32_t c, uint32_t d))
 {
     Thread *threads = (Thread*)malloc(NB_THREADS * sizeof(Thread));
@@ -183,7 +235,8 @@ Thread *initThreadList(Graph *Gr, void (*updateMeasure)(Graph *Gr, uint32_t a, u
         snprintf(str, 64, "outputs/threads/%d.txt", i);
         Ppurple();printf("%s\n", str);Preset();
         threads[i].fd = startLog(str);
-        fprintf(threads[i].fd, "%d\n", threads[i].Gr->triangles);
+        //fprintf(threads[i].fd, "%d\n", threads[i].Gr->triangles);
+        fprintf(threads[i].fd, "%.5f\n", computeAssortativity(threads[i].Gr->liAdj));
 
 
         pthread_create(&(threads[i].thread_id), NULL, MarkovThread, &threads[i]);
@@ -204,17 +257,79 @@ void *MarkovThread(void *arg)
     while (i<MAX_STEPS) {
 
         for (j=0; j<SAMPLING_GAP; j++) {
-            swapAndUpdate(thread->Gr, thread->updateMeasure);
+            //swapAndUpdate(thread->Gr, thread->updateMeasure);
+            kswapAndUpdate(thread->Gr);
             //printf("Thread [%p] Swap i=%d j=%d\n", (void *)thread, i, j);
         }
         i+=j;
         //printf("Thread [%p] fin des swaps\n", (void *)thread);
 
-        fprintf(thread->fd, "%d\n", thread->Gr->triangles);
+        fprintf(thread->fd, "%.5f\n", computeAssortativity(thread->Gr->liAdj));
+        //fprintf(thread->fd, "%d\n", thread->Gr->triangles);
     }
+    printf("Thread [%p] fin du processus\n", (void *)thread);
 
     fclose(thread->fd);
     freeGraph(thread->Gr);
     pthread_exit(NULL);
     return NULL;
+}
+
+void genPerm(uint32_t *perm, uint32_t *orig, uint32_t k) {
+    // Initialiser perm = orig
+    for (uint32_t i = 0; i < k; i++) perm[i] = orig[i];
+
+    // Fisher-Yates + correction pour éviter les points fixes
+    for (uint32_t i = k - 1; i > 0; i--) {
+        uint32_t j = rand() % (i + 1);
+        // S'assurer qu'on ne crée pas un point fixe
+        if (perm[j] == orig[i]) {
+            // Si perm[j] == orig[i], échanger avec quelqu’un d’autre
+            if (j != 0) j--;
+            else j++;
+        }
+        uint32_t tmp = perm[i];
+        perm[i] = perm[j];
+        perm[j] = tmp;
+    }
+
+    // Si dernier point fixe, échanger avec précédent
+    if (perm[0] == orig[0]) {
+        uint32_t tmp = perm[0];
+        perm[0] = perm[1];
+        perm[1] = tmp;
+    }
+}
+
+
+double computeAssortativity(LiAdj *li)
+{
+    const double M = (double)(li->nb_edges / 2);      /* #arêtes */
+    if (M == 0.0) return 0.0;
+
+    double sum_jk = 0.0, sum_jpk = 0.0, sum_j2pk2 = 0.0;
+
+    for (uint32_t u = 0; u < li->nb_vrtx; ++u) {
+        uint32_t du = vrtxDeg(li->L[u]);
+        for (VrtxVoisin *v = li->L[u]; v; v = v->next) {
+            uint32_t w = v->id;
+            if (w > u) {
+                uint32_t dw = vrtxDeg(li->L[w]);
+                sum_jk += (double)du * dw;
+                sum_jpk += (double)(du + dw);
+                sum_j2pk2 += (double)(du*du + dw*dw);
+            }
+        }
+    }
+    double a = sum_jk / M;
+    double b = sum_jpk / (2.0*M);
+    double c = sum_j2pk2 / (2.0*M);
+    double num = a - b*b;
+    double den = c - b*b;
+
+    /*  variance nulle  →  graphe parfaitement assortatif  */
+    if (fabs(den) < 1e-12)          /* tous les degrés identiques            */
+        return 1.0;                 /* on renvoie r = 1                      */
+
+    return num / den;
 }

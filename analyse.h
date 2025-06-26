@@ -5,8 +5,8 @@
 #include <pthread.h>
 
 #define NB_THREADS 100
-#define SAMPLING_GAP 20
-#define MAX_STEPS 20000
+#define SAMPLING_GAP 1214
+#define MAX_STEPS 100000
 
 typedef struct _graph Graph;
 struct _graph {
@@ -33,8 +33,11 @@ void updateTriangles(Graph *Gr, uint32_t a, uint32_t b, uint32_t c, uint32_t d);
 void genEdgeList(Graph *Gr);
 uint32_t getRandomEdge(Graph *Gr, uint32_t *vrtxA, uint32_t *vrtxB);
 void swapAndUpdate(Graph *Gr, void (*update)(Graph *Gr, uint32_t a, uint32_t b, uint32_t c, uint32_t d));
+int kswapAndUpdate(Graph *Gr);
 Thread *initThreadList(Graph *Gr, void (*updateMeasure)(Graph *Gr, uint32_t a, uint32_t b, uint32_t c, uint32_t d));
 void *MarkovThread(void *arg);
 void recordMeasuresThreads(Thread *threads);
+void genPerm(uint32_t *perm, uint32_t *orig, uint32_t k);
+double computeAssortativity(LiAdj *li);
 
 #endif

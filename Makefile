@@ -1,4 +1,4 @@
-CFLAGS = -Wall -Wextra -Werror -Wno-unused-parameter #-fsanitize=address #-Wno-unused-variable
+CFLAGS = -Wall -Wextra -Werror -Wno-unused-parameter -fsanitize=address #-Wno-unused-variable
 CC = gcc
 
 PROGRAM = test_graphes

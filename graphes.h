@@ -132,7 +132,11 @@ uint32_t* tabCountsOcc(uint32_t* degs, uint32_t size_degs, uint32_t* size_occ);
 uint32_t* genHalfEdgesTab(uint32_t* occ, uint32_t size_occ, uint32_t* half_edges_tab_size, uint32_t* graph_size);
 int _halfEdgesListeDoublon(uint32_t a, uint32_t b, uint32_t* tab, uint32_t tab_start, uint32_t tab_size);
 int swap(LiAdj* li, uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint8_t do_test);
+int kswap(LiAdj* li, uint32_t* liste_vrtx, uint32_t* perm_liste_vrtx, uint32_t k);
+void rollback_kswap(LiAdj* li, uint32_t* liste_vrtx, uint32_t* perm_liste_vrtx, uint32_t k);
 
 int bernou(double prob);
+double tirage_zipf(uint32_t k_max, double s);
+uint32_t* tirage_entiers_distincts(uint32_t k, uint32_t max);
 
 #endif
