@@ -1,0 +1,78 @@
+CAIDA network, part of the Koblenz Network Collection
+===========================================================================
+
+This directory contains the TSV and related files of the as-caida20071105 network: This is the undirected network of autonomous systems of the Internet connected with each other from the CAIDA project, collected in 2007. Nodes are autonomous systems (AS), and edges denote communication. 
+
+
+More information about the network is provided here: 
+http://konect.cc/networks/as-caida20071105
+
+Files: 
+    meta.as-caida20071105 -- Metadata about the network 
+    out.as-caida20071105 -- The adjacency matrix of the network in whitespace-separated values format, with one edge per line
+      The meaning of the columns in out.as-caida20071105 are: 
+        First column: ID of from node 
+        Second column: ID of to node
+        Third column (if present): weight or multiplicity of edge
+        Fourth column (if present):  timestamp of edges Unix time
+
+
+Use the following References for citation:
+
+@MISC{konect:2017:as-caida20071105,
+    title = {CAIDA network dataset -- {KONECT}},
+    month = oct,
+    year = {2017},
+    url = {http://konect.cc/networks/as-caida20071105}
+}
+
+@article{konect:leskovec107,
+        title = {Graph Evolution: Densification and Shrinking
+                  Diameters},
+        author = {Jure Leskovec and Jon Kleinberg and Christos
+                  Faloutsos}, 
+        journal = {ACM Trans. Knowl. Discov. from Data},   
+        year = {2007},
+        volume = {1},
+        number = {1},
+        pages = {1--40},
+}
+
+@article{konect:leskovec107,
+        title = {Graph Evolution: Densification and Shrinking
+                  Diameters},
+        author = {Jure Leskovec and Jon Kleinberg and Christos
+                  Faloutsos}, 
+        journal = {ACM Trans. Knowl. Discov. from Data},   
+        year = {2007},
+        volume = {1},
+        number = {1},
+        pages = {1--40},
+}
+
+
+@inproceedings{konect,
+	title = {{KONECT} -- {The} {Koblenz} {Network} {Collection}},
+	author = {Jérôme Kunegis},
+	year = {2013},
+	booktitle = {Proc. Int. Conf. on World Wide Web Companion},
+	pages = {1343--1350},
+	url = {http://dl.acm.org/citation.cfm?id=2488173},
+	url_presentation = {https://www.slideshare.net/kunegis/presentationwow},
+	url_web = {http://konect.cc/},
+	url_citations = {https://scholar.google.com/scholar?cites=7174338004474749050},
+}
+
+@inproceedings{konect,
+	title = {{KONECT} -- {The} {Koblenz} {Network} {Collection}},
+	author = {Jérôme Kunegis},
+	year = {2013},
+	booktitle = {Proc. Int. Conf. on World Wide Web Companion},
+	pages = {1343--1350},
+	url = {http://dl.acm.org/citation.cfm?id=2488173},
+	url_presentation = {https://www.slideshare.net/kunegis/presentationwow},
+	url_web = {http://konect.cc/},
+	url_citations = {https://scholar.google.com/scholar?cites=7174338004474749050},
+}
+
+

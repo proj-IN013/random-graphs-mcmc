@@ -272,15 +272,15 @@ void listeRender(LiAdj* li, char* graph_name, int do_open) {
     //-Kneato, -Kdot, -Kcirco
     if (do_open == 1) {
         if (fork() == 0) {
-            execl("/opt/homebrew/bin/dot", "dot", "-Tpng", "-Kcirco", dot_path, "-o", png_path, NULL);
+            execlp("dot", "dot", "-Tpng", "-Kcirco", dot_path, "-o", png_path, NULL);
             exit(EXIT_FAILURE);
         } else wait(NULL);
         if (fork() == 0) {
-            execl("/bin/rm", "rm", dot_path, NULL);
+            execlp("rm", "rm", dot_path, NULL);
             exit(EXIT_FAILURE);
         } else wait(NULL);
         if (fork() == 0) {
-            execl("/usr/bin/open", "open", png_path, NULL);
+            execlp("open", "open", png_path, NULL);
             exit(EXIT_FAILURE);
         } else wait(NULL);
     }

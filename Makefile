@@ -1,35 +1,29 @@
-CFLAGS = -Wall -Wextra -Werror -Wno-unused-parameter -fsanitize=address #-Wno-unused-variable
 CC = gcc
+CFLAGS = -Iinclude -Wall -Wextra -Werror -Wno-unused-parameter
 
-PROGRAM = test_graphes
+SRC_DIR = src
+BUILD_DIR = build
+
+PROGRAM = $(BUILD_DIR)/main
+
+SRC = $(wildcard $(SRC_DIR)/*.c)
+OBJ = $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/%.o,$(SRC))
 
 all: $(PROGRAM)
 
-$(PROGRAM): main.o analyse.o graphes.o Pcolors.o
-	$(CC) -o $(PROGRAM) $(CFLAGS) main.o analyse.o graphes.o Pcolors.o
+$(PROGRAM): $(OBJ)
+	$(CC) -o $@ $^ $(CFLAGS)
 
-main.o: main.c analyse.h graphes.h Pcolors.h
-	$(CC) $(CFLAGS) -c main.c
-
-analyse.o: analyse.c analyse.h
-	$(CC) $(CFLAGS) -c analyse.c
-
-graphes.o: graphes.c graphes.h
-	$(CC) $(CFLAGS) -c graphes.c
-
-Pcolors.o: Pcolors.c Pcolors.h
-	$(CC) $(CFLAGS) -c Pcolors.c
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
+	@mkdir -p $(BUILD_DIR)
+	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -f *.o *~ $(PROGRAM)
-
-.PHONY: all clean run
+	rm -rf $(BUILD_DIR)
 
 run: $(PROGRAM)
 	./$(PROGRAM)
 
-total: clean
-	make
-	./$(PROGRAM)
+total: clean all
 
-
+.PHONY: all clean run re

@@ -36,6 +36,6 @@ int main(void)
     initThreadList(Gr, updateTriangles);
 
     freeGraph(Gr);
-    fclose(plot);
+    //fclose(plot);
     return 0;
 }
