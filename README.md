@@ -1,5 +1,5 @@
 # Random Graphs MCMC
-**Génération de graphes aléatoires** à l’aide de méthodes Monte-Carlo par chaînes de Markov, dans le cadre d'un projet universitaire encadré par Lionel Tabourier (LIP6 - Sorbonne Université) : [télécharger le rapport](https://github.com/proj-IN013/random-graphs-mcmc/raw/main/Graphes_Aléatoires_MCMC-20%3A06.pdf)
+**Génération de graphes aléatoires** à l’aide de méthodes Monte-Carlo par chaînes de Markov, dans le cadre d'un projet universitaire encadré par Lionel Tabourier (LIP6 - Sorbonne Université) : [télécharger le rapport](https://github.com/proj-IN013/random-graphs-mcmc/raw/main/Graphes_Aléatoires_MCMC.pdf)
 
 
 ## Mise en route
